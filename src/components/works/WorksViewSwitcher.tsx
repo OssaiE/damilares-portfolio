@@ -1,0 +1,59 @@
+"use client";
+
+export type WorksView = "grid" | "list" | "zoom";
+
+export const WORKS_VIEWS: { id: WorksView; label: string }[] = [
+  { id: "grid", label: "Grid" },
+  { id: "list", label: "List" },
+  { id: "zoom", label: "Zoom" },
+];
+
+/**
+ * Header top-right control: `Works.  [Grid] [List] [Zoom]`.
+ * URL-driven — the parent updates `?view=` and passes the active view back.
+ */
+export default function WorksViewSwitcher({
+  view,
+  onChange,
+}: {
+  view: WorksView;
+  onChange: (v: WorksView) => void;
+}) {
+  return (
+    <div className="flex h-14 items-center gap-4">
+      <span className="font-sans text-[15px] font-medium text-primary">
+        Works.
+      </span>
+      <div
+        role="group"
+        aria-label="Choose a view"
+        className="flex items-center gap-2 font-sans text-[13px] tracking-wide"
+      >
+        {WORKS_VIEWS.map(({ id, label }) => {
+          const active = id === view;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onChange(id)}
+              aria-pressed={active}
+              className={`rounded-[2px] px-1 py-0.5 transition-colors duration-200 ${
+                active
+                  ? "text-primary underline decoration-primary underline-offset-4"
+                  : "text-paper/80 hover:text-primary"
+              }`}
+            >
+              <span aria-hidden className="opacity-60">
+                [
+              </span>{" "}
+              {label}{" "}
+              <span aria-hidden className="opacity-60">
+                ]
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
