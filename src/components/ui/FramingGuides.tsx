@@ -17,25 +17,27 @@ export default function FramingGuides({
       aria-hidden
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      {/* Vertical thirds guides */}
-      {[0.28, 0.72].map((x, i) => (
-        <motion.span
-          key={x}
-          className="absolute top-0 h-full w-px bg-primary/15"
-          style={{ left: `${x * 100}%` }}
-          initial={{ scaleY: 0, transformOrigin: "top" }}
-          animate={{ scaleY: 1 }}
-          transition={{
-            duration: 1.4,
-            delay: 0.4 + i * 0.1,
-            ease: [0.16, 1, 0.3, 1],
-          }}
-        />
-      ))}
+      {/* Vertical guides — 4 rules spanning the content column, left edge
+          (gutter) to right edge, evenly distributed. */}
+      <div className="absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] flex justify-between">
+        {[0, 1, 2, 3].map((i) => (
+          <motion.span
+            key={i}
+            className="h-full w-px bg-primary/15"
+            initial={{ scaleY: 0, transformOrigin: "top" }}
+            animate={{ scaleY: 1 }}
+            transition={{
+              duration: 1.4,
+              delay: 0.4 + i * 0.1,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+          />
+        ))}
+      </div>
 
       {reticle && (
         <motion.div
-          className="absolute left-[6%] top-[16%] hidden h-[62%] w-[62%] md:block"
+          className="absolute left-1/2 top-1/2 hidden h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 md:block"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.6 }}

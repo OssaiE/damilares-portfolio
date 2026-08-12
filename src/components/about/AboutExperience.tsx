@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
 import SiteChrome from "@/components/SiteChrome";
+import Footer from "@/components/layout/Footer";
 import GridBackdrop from "@/components/works/GridBackdrop";
 import { about, site, type GalleryShot } from "@/lib/site";
 
@@ -62,6 +62,11 @@ export default function AboutExperience() {
 
 /* ------------------------------- shared ------------------------------ */
 
+/* Identical glyph metrics for both stage wordmarks so the outlined copy over
+ * the picture lines up pixel-for-pixel with the solid one behind it. */
+const WORDMARK_METRICS =
+  "block whitespace-nowrap font-display font-bold leading-none tracking-[-0.02em] text-[16vw]";
+
 function OutlinedWordmark({ className = "" }: { className?: string }) {
   return (
     <div
@@ -81,53 +86,32 @@ function OutlinedWordmark({ className = "" }: { className?: string }) {
   );
 }
 
-function GalleryFrame({
-  shot,
-  first = false,
-}: {
-  shot: GalleryShot;
-  first?: boolean;
-}) {
+function GalleryFrame({ shot }: { shot: GalleryShot }) {
   return (
     <figure
       tabIndex={0}
-      className="group relative h-screen w-screen shrink-0 overflow-hidden bg-ink outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+      style={{ aspectRatio: shot.aspect }}
+      className="group relative h-full shrink-0 overflow-hidden bg-ink outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={shot.src}
-        alt={`${shot.role} — ${shot.location}`}
+        alt={`${shot.action} — ${shot.role}`}
         loading="lazy"
         draggable={false}
         className="h-full w-full object-cover"
       />
 
-      {first ? (
-        /* Opening frame carries the chapter title (bottom-left). */
-        <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-[var(--gutter)] pb-14 md:pb-20">
-          <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85 md:text-sm">
-            Chapter Two
-          </p>
-          <h2 className="mt-3 max-w-[14ch] font-sans text-[clamp(2.5rem,6vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.02em] text-primary [text-shadow:0_2px_30px_rgba(0,0,0,0.6)]">
-            {about.chapterTwo}
-          </h2>
-        </figcaption>
-      ) : (
-        /* Black overlay + metadata — fade in on hover / focus only */
-        <figcaption className="pointer-events-none absolute inset-0 flex flex-col items-start justify-end bg-ink/0 p-[var(--gutter)] pb-14 opacity-0 transition-[opacity,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-ink/60 group-hover:opacity-100 group-focus-visible:bg-ink/60 group-focus-visible:opacity-100 md:pb-20">
-          <p className="font-sans text-3xl font-semibold leading-tight text-paper md:text-4xl">
-            {shot.role}
-          </p>
-          <p className="mt-2 font-sans text-base text-paper/80 md:text-lg">
-            {shot.location}
-          </p>
-          {(shot.project || shot.year) && (
-            <p className="mt-4 font-sans text-[11px] uppercase tracking-[0.18em] text-primary">
-              {[shot.project, shot.year].filter(Boolean).join(" · ")}
-            </p>
-          )}
-        </figcaption>
-      )}
+      {/* Black overlay + caption — fade in centred on hover / focus only.
+          Top: what he's doing (Inter regular 20). Below: role (Inter semibold 24). */}
+      <figcaption className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-ink/0 p-6 text-center opacity-0 transition-[opacity,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-ink/55 group-hover:opacity-100 group-focus-visible:bg-ink/55 group-focus-visible:opacity-100">
+        <p className="font-sans text-[20px] font-normal leading-snug text-primary/80 [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
+          {shot.action}
+        </p>
+        <p className="font-sans text-[24px] font-semibold leading-snug text-primary [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
+          {shot.role}
+        </p>
+      </figcaption>
     </figure>
   );
 }
@@ -139,8 +123,32 @@ function Cinematic() {
   const creditsRef = useRef<HTMLDivElement>(null);
   const galleryLayerRef = useRef<HTMLDivElement>(null);
   const galleryRowRef = useRef<HTMLDivElement>(null);
+  const scrimRef = useRef<HTMLDivElement>(null);
   const metrics = useRef({ creditsPx: 1, galleryPx: 0, travel: 1, startY: 0 });
   const [spacerH, setSpacerH] = useState("300vh");
+
+  // Intro reveal — wordmark types in → portrait wipes open from the middle → bio
+  // rises. `typed` counts the wordmark characters; `phase` gates each stage.
+  const [typed, setTyped] = useState(0);
+  const [phase, setPhase] = useState<0 | 1 | 2>(0);
+  useEffect(() => {
+    const full = site.name.length;
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setTyped(i);
+      if (i >= full) {
+        window.clearInterval(id);
+        window.setTimeout(() => setPhase(1), 240);
+      }
+    }, 90);
+    return () => window.clearInterval(id);
+  }, []);
+  useEffect(() => {
+    if (phase !== 1) return;
+    const t = window.setTimeout(() => setPhase(2), 640);
+    return () => window.clearTimeout(t);
+  }, [phase]);
 
   // Measure the credits height + gallery width → scroll length.
   useEffect(() => {
@@ -198,6 +206,13 @@ function Cinematic() {
       if (chapterOne) chapterOne.style.opacity = (1 - te).toFixed(3);
       if (credits) credits.style.opacity = (1 - te).toFixed(3);
 
+      // Dark overlay deepens as soon as the scroll starts, so the bio reads over
+      // the portrait. Eases back out with the cross-dissolve into Chapter 2.
+      const scrim = scrimRef.current;
+      if (scrim) {
+        scrim.style.opacity = (clamp(s / (vh * 0.5), 0, 0.5) * (1 - te)).toFixed(3);
+      }
+
       // Gallery eases in (slight slide from the right) then scrolls horizontally.
       const galleryLayer = galleryLayerRef.current;
       const galleryRow = galleryRowRef.current;
@@ -221,11 +236,35 @@ function Cinematic() {
         <GridBackdrop />
         <div className="grain pointer-events-none absolute inset-0 opacity-[0.06]" />
 
-        {/* Chapter 1 — outlined wordmark + static portrait */}
+        {/* Chapter 1 — solid wordmark behind · full-height portrait ·
+            outlined wordmark clipped over the picture (aligned to the one behind) */}
         <div ref={chapterOneRef} className="absolute inset-0">
-          <OutlinedWordmark className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center" />
+          {/* (a) solid, bold wordmark — types in bright, then settles to a faint
+              watermark behind the picture. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none overflow-hidden text-center transition-opacity duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{ opacity: phase >= 1 ? 0.1 : 0.42 }}
+          >
+            <span className={WORDMARK_METRICS} style={{ color: "#FFCC00" }}>
+              {site.name.slice(0, typed)}
+              {phase === 0 && (
+                <span className="[animation:caret-blink_1s_infinite]">|</span>
+              )}
+            </span>
+          </div>
+
+          {/* (b) full-height portrait, centred — wipes open from the middle */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative h-[82vh] w-auto" style={{ aspectRatio: "3 / 4" }}>
+            <div
+              className="relative h-screen w-auto transition-[opacity,transform,clip-path] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+              style={{
+                aspectRatio: "3 / 4",
+                opacity: phase >= 1 ? 1 : 0,
+                transform: phase >= 1 ? "scale(1)" : "scale(1.06)",
+                clipPath: phase >= 1 ? "inset(0% 0 0% 0)" : "inset(50% 0 50% 0)",
+              }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={about.portrait}
@@ -234,8 +273,37 @@ function Cinematic() {
                 draggable={false}
               />
               <div className="vignette pointer-events-none absolute inset-0" />
+
+              {/* (c) outlined wordmark — same metrics, centred on the viewport,
+                  then clipped to the image box so the outline shows only over the
+                  picture and registers exactly with the solid wordmark behind. */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 select-none overflow-hidden"
+              >
+                <div className="absolute left-1/2 top-1/2 w-screen -translate-x-1/2 -translate-y-1/2 text-center">
+                  <span
+                    className={WORDMARK_METRICS}
+                    style={{
+                      color: "transparent",
+                      WebkitTextStroke: "1.5px rgba(255, 204, 0, 0.55)",
+                    }}
+                  >
+                    {site.name}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Scroll-in dark overlay — deepens as you scroll so the bio reads.
+              Above the portrait/wordmark, below the credits (a separate layer). */}
+          <div
+            ref={scrimRef}
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-ink"
+            style={{ opacity: 0 }}
+          />
         </div>
 
         {/* Credits — roll upward over the portrait, centred, width-capped */}
@@ -244,44 +312,73 @@ function Cinematic() {
           className="absolute left-1/2 top-0 w-[min(46vw,40rem)] text-center"
           style={{ transform: "translate3d(-50%, 38vh, 0)" }}
         >
-          <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-[40vh] font-sans text-[clamp(2.25rem,4.6vw,4.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-primary [text-shadow:0_2px_28px_rgba(0,0,0,0.65)]"
+          <div
+            className="transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              opacity: phase >= 2 ? 1 : 0,
+              transform: phase >= 2 ? "translateY(0)" : "translateY(24px)",
+            }}
           >
-            {about.chapterOne}
-          </motion.h1>
+            <h1 className="mb-[7vh] font-sans text-[96px] font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_28px_rgba(0,0,0,0.65)]">
+              {about.chapterOne}
+            </h1>
 
-          {about.credits.map((c, i) => (
-            <div
-              key={i}
-              className="mb-[42vh] [text-shadow:0_2px_24px_rgba(0,0,0,0.7)]"
-            >
-              <p className="font-sans text-lg font-semibold tracking-wide text-primary md:text-xl">
-                {c.scene}
-              </p>
-              <p className="mx-auto mt-4 max-w-[34ch] font-sans text-[15px] leading-relaxed text-primary/85 md:text-base">
-                {c.body}
-              </p>
-            </div>
-          ))}
+            {about.bio.map((para, i) => {
+              const last = i === about.bio.length - 1;
+              if (last) {
+                // The mission — set like a quote pulled from a screenplay.
+                return (
+                  <figure key={i} className="mx-auto mb-[16vh] mt-[4vh] max-w-[44ch]">
+                    <blockquote className="text-[18px] italic leading-relaxed text-primary [text-shadow:0_2px_24px_rgba(0,0,0,0.75)] [font-family:'Courier_New',ui-monospace,monospace] md:text-[21px]">
+                      “{para}”
+                    </blockquote>
+                    <figcaption className="mt-4 text-[12px] uppercase tracking-[0.28em] text-primary/70 [font-family:'Courier_New',ui-monospace,monospace]">
+                      — Damilare
+                    </figcaption>
+                  </figure>
+                );
+              }
+              return (
+                <p
+                  key={i}
+                  className="mx-auto mb-[9vh] max-w-[42ch] font-sans text-[16px] leading-relaxed text-primary/90 [text-shadow:0_2px_24px_rgba(0,0,0,0.75)] md:text-[17px]"
+                >
+                  {para}
+                </p>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Chapter 2 — full-bleed vertical reel (scroll-driven translateY) */}
+        {/* Chapter 2 — layered stage:
+            (z-0) full-bleed photo reel · (z-10) vignette · (z-20) pinned title */}
         <div
           ref={galleryLayerRef}
           className="absolute inset-0 opacity-0"
           style={{ pointerEvents: "none" }}
         >
+          {/* Horizontal photo reel — full-bleed frames, edge to edge, no gaps */}
           <div
             ref={galleryRowRef}
-            className="flex h-full"
+            className="absolute inset-0 z-0 flex"
             style={{ transform: "translate3d(0,0,0)", willChange: "transform" }}
           >
             {about.gallery.map((shot, i) => (
-              <GalleryFrame key={i} shot={shot} first={i === 0} />
+              <GalleryFrame key={i} shot={shot} />
             ))}
+          </div>
+
+          {/* Vignette — above the photos, below the title */}
+          <div className="vignette pointer-events-none absolute inset-0 z-10" />
+
+          {/* Pinned title — on top, fixed to the bottom edge as the reel scrolls */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-[var(--gutter)] pb-14 md:pb-20">
+            <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85 md:text-sm">
+              Chapter Two
+            </p>
+            <h2 className="mt-3 max-w-[16ch] font-sans text-[96px] font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_30px_rgba(0,0,0,0.6)]">
+              {about.chapterTwo}
+            </h2>
           </div>
         </div>
       </div>
@@ -289,22 +386,26 @@ function Cinematic() {
       {/* Scroll length */}
       <div aria-hidden style={{ height: spacerH }} />
 
+      {/* Footer — rides above the fixed stage (z-30) so it slides up and
+          "pops out" over the resting last frame at the end of the scroll.
+          Full-bleed + vertically centred so it lands as a centred full page. */}
+      <div className="relative z-30 flex min-h-screen flex-col justify-center bg-ink">
+        <Footer />
+      </div>
+
       {/* Accessible, static copy of the narrative for AT / no-JS crawlers */}
       <div className="sr-only">
         <h1>
           {site.name} — {about.chapterOne}
         </h1>
-        {about.credits.map((c, i) => (
-          <p key={i}>
-            {c.scene}. {c.body}
-          </p>
+        {about.bio.map((para, i) => (
+          <p key={i}>{para}</p>
         ))}
         <h2>{about.chapterTwo}</h2>
         <ul>
           {about.gallery.map((shot, i) => (
             <li key={i}>
-              {shot.role} — {shot.location}
-              {shot.project ? ` (${shot.project})` : ""}
+              {shot.action} — {shot.role}
             </li>
           ))}
         </ul>
@@ -341,20 +442,25 @@ function Fallback() {
 
         {/* Chapter 1 — narrative */}
         <section className="mx-auto max-w-[36rem] px-[var(--gutter)] py-16 text-center">
-          <h1 className="font-sans text-[clamp(2rem,9vw,3rem)] font-bold leading-[1] tracking-[-0.02em] text-primary">
+          <h1 className="font-sans text-[clamp(2.5rem,12vw,4rem)] font-extrabold leading-[0.9] tracking-[-0.02em] text-primary">
             {about.chapterOne}
           </h1>
-          <div className="mt-12 space-y-12">
-            {about.credits.map((c, i) => (
-              <div key={i}>
-                <p className="font-sans text-base font-semibold tracking-wide text-primary">
-                  {c.scene}
+          <div className="mt-8 space-y-6 text-left">
+            {about.bio.map((para, i) => {
+              const last = i === about.bio.length - 1;
+              return (
+                <p
+                  key={i}
+                  className={`font-sans leading-relaxed ${
+                    last
+                      ? "text-[17px] font-medium italic text-primary [font-family:'Courier_New',ui-monospace,monospace]"
+                      : "text-[15px] text-primary/90"
+                  }`}
+                >
+                  {para}
                 </p>
-                <p className="mx-auto mt-3 max-w-[34ch] font-sans text-[15px] leading-relaxed text-primary/85">
-                  {c.body}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -368,7 +474,7 @@ function Fallback() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={shot.src}
-                alt={`${shot.role} — ${shot.location}`}
+                alt={`${shot.action} — ${shot.role}`}
                 loading="lazy"
                 className="h-full w-full object-cover"
               />
@@ -383,17 +489,19 @@ function Fallback() {
                 </figcaption>
               ) : (
                 <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-[var(--gutter)] pb-10">
-                  <p className="font-sans text-2xl font-semibold text-paper">
-                    {shot.role}
+                  <p className="font-sans text-[20px] font-normal text-primary/80">
+                    {shot.action}
                   </p>
-                  <p className="mt-1 font-sans text-sm text-paper/80">
-                    {shot.location}
+                  <p className="mt-0.5 font-sans text-[24px] font-semibold text-primary">
+                    {shot.role}
                   </p>
                 </figcaption>
               )}
             </figure>
           ))}
         </section>
+
+        <Footer />
       </main>
     </div>
   );

@@ -27,16 +27,20 @@ type P = {
  * extends above the type so displaced particles are never clipped at the top.
  */
 export default function ParticleText({
+  text = site.name,
   hovering,
   enabled,
   pointer,
   onReady,
 }: {
+  text?: string;
   hovering: boolean;
   enabled: boolean;
   pointer: { current: { x: number; y: number } };
   onReady?: () => void;
 }) {
+  const textRef = useRef(text);
+  textRef.current = text;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const target = useRef(0);
   target.current = hovering && enabled ? 1 : 0;
@@ -79,14 +83,15 @@ export default function ParticleText({
       octx.textBaseline = "alphabetic";
       octx.font = `700 100px "Oriya Sangam MN", "Arial Black", sans-serif`;
       octx.letterSpacing = LETTER_SPACING;
-      const base = octx.measureText(site.name).width || 1;
+      const label = textRef.current;
+      const base = octx.measureText(label).width || 1;
       const size = (100 * W) / base;
       octx.font = `700 ${size}px "Oriya Sangam MN", "Arial Black", sans-serif`;
       octx.letterSpacing = LETTER_SPACING;
-      const m = octx.measureText(site.name);
+      const m = octx.measureText(label);
       const desc = m.actualBoundingBoxDescent || size * 0.18;
       octx.fillStyle = "#fff";
-      octx.fillText(site.name, 0, H - desc); // bottom-aligned
+      octx.fillText(label, 0, H - desc); // bottom-aligned
 
       const data = octx.getImageData(0, 0, off.width, off.height).data;
       const pts: { x: number; y: number }[] = [];

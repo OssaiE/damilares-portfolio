@@ -2,29 +2,31 @@
 
 import { useEffect } from "react";
 import { useReducedMotion } from "motion/react";
-import { useLenis } from "lenis/react";
 import { scrollControl } from "@/lib/scrollControl";
 
-/** cubic-bezier(0.22, 1, 0.36, 1) — easeOutQuint: fast start, smooth deceleration
- *  into place, so each project glides into the viewport as smoothly as possible. */
+/** easeOutQuint — fast start, long smooth deceleration into place. */
 const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
-
-const DURATION = 0.95; // seconds — a touch longer for a smoother arrival
+const DURATION = 900; // ms per section glide
 
 /**
- * fela.tv-style strict section scrolling. Native scrolling is hijacked so each
- * wheel flick / swipe / arrow press advances exactly ONE section (hero → each
- * project → footer) — never a free/inertia scroll through several. The move is
- * locked until its transition finishes, and a wheel gesture only counts once
- * (trailing momentum is ignored). Disabled under reduced-motion (native scroll)
- * and while a modal has locked the page.
+ * fela.tv-style strict section scrolling, restored. Each wheel flick / swipe /
+ * arrow advances exactly ONE `[data-snap]` section, gliding into place with an
+ * easeOutQuint tween — never a free/inertia scroll through several.
+ *
+ * Runs on a plain rAF tween over the NATIVE scroll position (no Lenis), so it
+ * can't stall or fight CSS scroll-snap: a fresh flick simply retargets the tween
+ * from wherever we are. Disabled under reduced-motion (native scroll).
  */
-export default function ScrollController() {
-  const lenis = useLenis();
+export default function SectionScroller() {
   const reduce = useReducedMotion();
 
   useEffect(() => {
     if (reduce) return;
+
+    // The CSS `scroll-behavior: smooth` would re-animate on every rAF scrollTo,
+    // fighting our tween — force instant scrolling while we own the motion.
+    const prevBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
 
     let sections: HTMLElement[] = [];
     const collect = () => {
@@ -34,6 +36,7 @@ export default function ScrollController() {
     };
     collect();
 
+    let raf = 0;
     const topOf = (el: HTMLElement) =>
       Math.round(el.getBoundingClientRect().top + window.scrollY);
 
@@ -51,63 +54,33 @@ export default function ScrollController() {
       return best;
     };
 
-    let animating = false;
-    let releaseTimer: ReturnType<typeof setTimeout> | undefined;
-    let queuedDir = 0;
-
-    const finishAnimation = () => {
-      animating = false;
-      clearTimeout(releaseTimer);
-      if (queuedDir !== 0) {
-        const d = queuedDir;
-        queuedDir = 0;
-        step(d);
-      }
+    const tweenTo = (y: number) => {
+      cancelAnimationFrame(raf);
+      const startY = window.scrollY;
+      const dist = y - startY;
+      if (Math.abs(dist) < 2) return;
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const p = Math.min(1, (now - t0) / DURATION);
+        window.scrollTo(0, startY + dist * easeOutQuint(p));
+        if (p < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
     };
 
     const goToIndex = (i: number) => {
       const clamped = Math.max(0, Math.min(sections.length - 1, i));
       const target = sections[clamped];
-      if (!target) return;
-      const y = topOf(target);
-      if (Math.abs(window.scrollY - y) < 2) return; // already there
-
-      animating = true;
-      clearTimeout(releaseTimer);
-      // Safety release: ALWAYS clears `animating` even if onComplete never fires,
-      // so the page can never be left stuck/unscrollable.
-      releaseTimer = setTimeout(finishAnimation, DURATION * 1000 + 300);
-
-      if (lenis) {
-        // One move at a time (guarded by `animating`) so scrollTo calls never
-        // overlap — overlapping calls were leaving Lenis stuck (frozen scroll).
-        lenis.scrollTo(y, {
-          duration: DURATION,
-          easing: easeOutQuint,
-          lock: true,
-          force: true,
-          onComplete: finishAnimation,
-        });
-      } else {
-        window.scrollTo({ top: y, behavior: "smooth" });
-        finishAnimation();
-      }
+      if (target) tweenTo(topOf(target));
     };
 
     const step = (dir: number) => {
-      // Mid-animation: remember the LATEST direction and run it (recomputed from
-      // the nearest section) the instant we land — so a scroll during the
-      // transition is never lost, and never inverted.
-      if (animating) {
-        queuedDir = dir;
-        return;
-      }
       const next = nearestIndex() + dir;
       if (next < 0 || next > sections.length - 1) return;
       goToIndex(next);
     };
 
-    // Let the works indicator jump to a specific project (Nth [data-snap] article).
+    // Works indicator → jump to the Nth project (Nth [data-snap] article).
     scrollControl.goToProject = (projectIndex: number) => {
       const articles = sections.filter((s) => s.tagName === "ARTICLE");
       const target = articles[projectIndex];
@@ -118,29 +91,34 @@ export default function ScrollController() {
       document.body.style.overflow === "hidden" ||
       (target as HTMLElement | null)?.closest?.("[data-lenis-prevent]") != null;
 
-    // --- Wheel: exactly one step per gesture ---
-    // The step fires, then a lock is held until the wheel is COMPLETELY silent
-    // for GESTURE_IDLE ms. Because every wheel event (the finger-scroll, the
-    // phase gap, and the whole inertia tail) keeps resetting that timer, the
-    // entire gesture is consumed as a single step no matter its shape — momentum
-    // can never sneak in a second one. An acceleration check is a second guard
-    // so a decaying tail can't start a step even if the lock ever lapses.
-    const GESTURE_IDLE = 180; // ms of wheel silence that ends a gesture
-    let gestureLock = false;
-    let gestureIdleTimer: ReturnType<typeof setTimeout> | undefined;
+    // --- Wheel: responsive one-step-per-flick via ACCELERATION detection.
+    // A fresh flick's deltas are RISING (accelerating) → fire a step immediately,
+    // even mid-glide or during the previous flick's inertia. The inertia tail is
+    // FALLING (decelerating) → ignored, so momentum never over-scrolls. A short
+    // debounce keeps a single flick to a single step. No lock to wait on, so
+    // rapid flicks chain straight through sections. ---
+    const GESTURE_IDLE = 150; // ms of silence that ends a gesture (resets samples)
+    const STEP_DEBOUNCE = 110; // min ms between steps (one step per flick)
+    let deltas: number[] = [];
+    let prevTs = 0;
+    let lastStep = 0;
+    const avgOf = (arr: number[], n: number) => {
+      const s = arr.slice(-n);
+      return s.length ? s.reduce((a, b) => a + b, 0) / s.length : 0;
+    };
     const onWheel = (e: WheelEvent) => {
       if (blocked(e.target)) return;
       e.preventDefault();
-      // The whole fling (finger scroll + inertia tail) keeps resetting this
-      // timer, so it's consumed as ONE step; the first significant event sets
-      // the direction.
-      clearTimeout(gestureIdleTimer);
-      gestureIdleTimer = setTimeout(() => {
-        gestureLock = false;
-      }, GESTURE_IDLE);
-
-      if (gestureLock || Math.abs(e.deltaY) < 4) return;
-      gestureLock = true;
+      const now = performance.now();
+      if (now - prevTs > GESTURE_IDLE) deltas = [];
+      prevTs = now;
+      const mag = Math.abs(e.deltaY);
+      deltas.push(mag);
+      if (deltas.length > 80) deltas.shift();
+      if (mag < 4 || now - lastStep < STEP_DEBOUNCE) return;
+      // Fire only while the gesture is accelerating (new input), not decaying.
+      if (avgOf(deltas, 8) < avgOf(deltas, 40)) return;
+      lastStep = now;
       step(e.deltaY > 0 ? 1 : -1);
     };
 
@@ -153,7 +131,7 @@ export default function ScrollController() {
       if (!blocked(e.target)) e.preventDefault();
     };
     const onTouchEnd = (e: TouchEvent) => {
-      if (blocked(e.target) || animating) return;
+      if (blocked(e.target)) return;
       const dy = touchStartY - (e.changedTouches[0]?.clientY ?? touchStartY);
       if (Math.abs(dy) < 40) return;
       step(dy > 0 ? 1 : -1);
@@ -161,7 +139,7 @@ export default function ScrollController() {
 
     // --- Keyboard ---
     const onKey = (e: KeyboardEvent) => {
-      if (document.body.style.overflow === "hidden" || animating) return;
+      if (document.body.style.overflow === "hidden") return;
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       switch (e.key) {
@@ -195,9 +173,9 @@ export default function ScrollController() {
     window.addEventListener("resize", collect);
 
     return () => {
+      document.documentElement.style.scrollBehavior = prevBehavior;
       scrollControl.goToProject = null;
-      clearTimeout(releaseTimer);
-      clearTimeout(gestureIdleTimer);
+      cancelAnimationFrame(raf);
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
@@ -205,7 +183,7 @@ export default function ScrollController() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", collect);
     };
-  }, [lenis, reduce]);
+  }, [reduce]);
 
   return null;
 }
