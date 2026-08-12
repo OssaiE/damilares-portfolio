@@ -192,6 +192,28 @@ body {
   mix-blend-mode: overlay;
 }
 
+/* Project-wide background noise. Two knobs:
+ *   --grain-density → layer opacity (100% = 1)
+ *   --grain-size    → grain scale, ~px (0.5 = fine)
+ * Fixed & pointer-events-none so it lies over the entire app on every route. */
+:root {
+  --grain-density: 1;
+  --grain-size: 0.5;
+}
+.grain-field {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: var(--grain-density);
+  /* soft-light adds the grain as fine luminance noise WITHOUT the contrast/
+   * saturation punch of `overlay`, so the page keeps its vibrant colours. */
+  mix-blend-mode: soft-light;
+  background-repeat: repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: calc(var(--grain-size) * 140px);
+}
+
 /* Blinking terminal caret */
 @keyframes caret-blink {
   0%,

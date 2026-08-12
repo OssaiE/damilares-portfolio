@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Ref } from "react";
 import { motion } from "motion/react";
 import ParticleText from "@/components/ui/ParticleText";
 import { site } from "@/lib/site";
@@ -17,8 +17,19 @@ const LETTER_SPACING = "-0.07em";
  * label, the entrance reveal, and the fallback on coarse pointers / reduced
  * motion (where it simply renders the solid type).
  */
-export default function MaskedWordmark() {
-  const rootRef = useRef<HTMLHeadingElement>(null);
+export default function MaskedWordmark({
+  text = site.name,
+  as: Tag = "h1",
+  reveal,
+}: {
+  text?: string;
+  as?: "h1" | "p" | "span" | "div";
+  /** Gates the blur-in entrance. `undefined` → play once on mount (default,
+   *  used elsewhere). `true`/`false` → the caller drives it (e.g. the hero
+   *  stages it after the copy types in). */
+  reveal?: boolean;
+} = {}) {
+  const rootRef = useRef<HTMLElement>(null);
   const svgTextRef = useRef<SVGTextElement>(null);
   const pointer = useRef({ x: 0, y: 0 });
   const [box, setBox] = useState({ x: 0, y: 40, w: 1580, h: 168 });
@@ -80,13 +91,34 @@ export default function MaskedWordmark() {
 
   const viewBox = `${box.x} ${box.y} ${box.w} ${box.h}`;
 
+  // Caller-driven reveal fades in gently (small blur); the standalone mount
+  // reveal keeps the fuller focus-pull blur.
+  // Blur-in ("focus pull") entrance in both modes — caller-driven just uses a
+  // slightly softer blur/rise than the fuller standalone mount.
+  const hidden =
+    reveal === undefined
+      ? { y: "14%", opacity: 0, filter: "blur(14px)" }
+      : { y: "6%", opacity: 0, filter: "blur(12px)" };
+  const shown = { y: "0%", opacity: 1, filter: "blur(0px)" };
+
   return (
-    <h1 ref={rootRef} className="relative select-none" aria-label={site.name}>
+    <Tag
+      ref={rootRef as Ref<HTMLHeadingElement>}
+      className="relative block select-none"
+      aria-label={text}
+    >
+      {/* When the caller drives the entrance (`reveal` defined) it gets a gentle
+          fade so it doesn't re-read as the intro's focus-pull; on its own it
+          plays the fuller blur-in once on mount. */}
       <motion.div
         className="relative block w-full [mix-blend-mode:exclusion]"
-        initial={{ y: "14%", opacity: 0, filter: "blur(14px)" }}
-        animate={{ y: "0%", opacity: 1, filter: "blur(0px)" }}
-        transition={{ duration: 1.25, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        initial={hidden}
+        animate={reveal === false ? hidden : shown}
+        transition={{
+          duration: reveal === undefined ? 1.25 : 1.1,
+          delay: reveal === undefined ? 0.55 : 0.1,
+          ease: [0.16, 1, 0.3, 1],
+        }}
       >
         {/* SVG mirror: layout box + a11y + reveal + fallback. Hidden once the
             particle field is drawing (both are yellow / exclusion, so the
@@ -95,7 +127,7 @@ export default function MaskedWordmark() {
           viewBox={viewBox}
           width="100%"
           role="img"
-          aria-label={site.name}
+          aria-label={text}
           preserveAspectRatio="xMidYMax meet"
           className="block h-auto w-full transition-opacity duration-200"
           style={{ opacity: enabled && particlesReady ? 0 : 1 }}
@@ -110,18 +142,19 @@ export default function MaskedWordmark() {
             style={{ letterSpacing: LETTER_SPACING }}
             fill="#ffcc00"
           >
-            {site.name}
+            {text}
           </text>
         </svg>
 
         {/* Particle field (pointer smoothly repels nearby particles) */}
         <ParticleText
+          text={text}
           hovering={hovering}
           enabled={enabled}
           pointer={pointer}
           onReady={() => setParticlesReady(true)}
         />
       </motion.div>
-    </h1>
+    </Tag>
   );
 }

@@ -64,7 +64,12 @@ export default function FeaturedWorks() {
   }, []);
 
   const goTo = (i: number) => {
-    scrollControl.goToProject?.(i);
+    if (scrollControl.goToProject) {
+      scrollControl.goToProject(i);
+    } else {
+      const article = sectionRef.current?.querySelectorAll("article")[i];
+      article?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (

@@ -60,6 +60,8 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="min-h-full bg-ink text-paper">
         <Providers>{children}</Providers>
+        {/* Project-wide background noise (density/size tuned in globals.css). */}
+        <div className="grain-field" aria-hidden />
       </body>
     </html>
   );

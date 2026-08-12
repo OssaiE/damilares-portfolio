@@ -42,8 +42,12 @@ export const meta = [
 
 /** Hero "scene" copy */
 export const hero = {
-  tagline: "Bringing stories that push emotions",
-  scene: "Scene 1: You are introduced to Damilare",
+  intro: "Hi",
+  lines: [
+    "I'm Damilare Olawoyin.",
+    "I'm a creative based in Lagos, Nigeria",
+    "Bringing stories that push emotions",
+  ],
   lenses: ["135mm", "50mm", "35mm"],
 } as const;
 
@@ -53,15 +57,14 @@ export const hero = {
 /*  the real photos in /public/images/about/ and repoint `portrait` +   */
 /*  each gallery `src` below — everything else is data-driven.          */
 /* ------------------------------------------------------------------ */
-export type AboutCredit = { scene: string; body: string };
 export type GalleryShot = {
   src: string;
   /** CSS aspect-ratio for the frame (keeps photos uncropped-ish, varied). */
   aspect: string;
+  /** What he's doing in the frame — top hover line (Inter regular 20). */
+  action: string;
+  /** His role/title — bottom hover line (Inter semibold 24). */
   role: string;
-  location: string;
-  project?: string;
-  year?: string;
 };
 
 export const about = {
@@ -69,37 +72,23 @@ export const about = {
   chapterTwo: "The Creative in His Element.",
   portrait: "/images/hero-poster.jpg", // → /images/about/portrait.jpg
   intro: `${site.creator} — ${site.role}, ${site.location}.`,
-  credits: [
-    {
-      scene: "Scene 01 — Origins",
-      body: "Lagos, first light. A kid who saw the world in frames long before he ever held a camera — learning early that every story is really about the people inside it.",
-    },
-    {
-      scene: "Scene 02 — The Craft",
-      body: "Direction, editing, colour. The quiet hours where footage becomes feeling — pacing a cut until it breathes, grading a frame until it remembers the room.",
-    },
-    {
-      scene: "Scene 03 — The Collaborators",
-      body: "Artists, musicians and brands who trust the process. From studio sessions to sold-out stages, the work is built shoulder to shoulder.",
-    },
-    {
-      scene: "Scene 04 — The Vision",
-      body: "Stories that push emotion first. Cinema made for the culture it comes from — honest, textured, and unmistakably ours.",
-    },
-    {
-      scene: site.role,
-      body: `${site.creator} — ${site.location}.`,
-    },
-  ] as AboutCredit[],
+  bio: [
+    "I'm Damilare Olawoyin, a filmmaker and creative director who lives for moments that move people. For me, storytelling isn't just a craft; it's an instinct. It's the way I see the world. Every frame, every cut, every sound is a chance to pull an audience into an experience they won't forget.",
+    "Over the years, I've built my career around creating visuals that feel alive, from high-energy commercials and brand films to emotionally grounded digital content and TV projects. I work end-to-end across the creative process: directing, editing, colour grading, sound design, VFX, and post-production supervision, allowing me to shape the heartbeat of a project from concept to final delivery.",
+    "My style blends cinematic storytelling with modern, sleek visual craftsmanship. I'm obsessed with rhythm, emotion, and detail, the pace of an edit, the weight of a sound cue, the glow of a highlight, the way colour shifts the mood. I create with intention, ensuring everything on screen is saying something.",
+    "As a director and editor, I'm drawn to stories that feel bold, human, and visually striking. As a post-production artist, I'm meticulous when sculpting visuals, enhancing realism, and building atmosphere. Whether I'm on set bringing a vision together or in the edit refining the soul of a piece, I lead with clarity, creativity, and purpose.",
+    "I'm constantly pushing myself, experimenting with new techniques, blending practical and digital storytelling, and exploring the next evolution of visual language. At the core of everything I make is one mission:",
+    "To craft visuals that resonate… stories that breathe… and experiences that stay with you long after the screen goes dark.",
+  ] as string[],
   gallery: [
-    { src: "/images/palmwine-poster.jpg", aspect: "3 / 2", role: "Creative Director", location: "Lagos, Nigeria", project: "Trace Live", year: "2024" },
-    { src: "/images/hero-poster.jpg", aspect: "3 / 4", role: "On Set", location: "Lagos, Nigeria", project: "Palmwine Fest", year: "2024" },
-    { src: "/images/palmwine-poster.jpg", aspect: "4 / 5", role: "Directing", location: "Lagos, Nigeria", project: "Trace Sessions", year: "2024" },
-    { src: "/images/hero-poster.jpg", aspect: "3 / 2", role: "In the Edit", location: "Lagos, Nigeria", project: "Lord's Gin", year: "2024" },
-    { src: "/images/palmwine-poster.jpg", aspect: "9 / 16", role: "On Stage", location: "Lagos, Nigeria", project: "Live Show", year: "2024" },
-    { src: "/images/hero-poster.jpg", aspect: "3 / 2", role: "Collaborating", location: "Lagos, Nigeria", project: "Studio Session", year: "2023" },
-    { src: "/images/palmwine-poster.jpg", aspect: "3 / 4", role: "Producing", location: "Lagos, Nigeria", project: "Documentary", year: "2023" },
-    { src: "/images/hero-poster.jpg", aspect: "4 / 5", role: "Behind the Lens", location: "Lagos, Nigeria", project: "Campaign Film", year: "2023" },
+    { src: "/images/about/el-1.jpg", aspect: "3 / 4", action: "On Set", role: "Videographer" },
+    { src: "/images/about/el-2.jpg", aspect: "3 / 2", action: "Directing the Crew", role: "Creative Director" },
+    { src: "/images/about/el-3.jpg", aspect: "3 / 4", action: "On Stage", role: "Creative Director" },
+    { src: "/images/about/el-4.jpg", aspect: "3 / 4", action: "Monitoring the Shot", role: "Director" },
+    { src: "/images/about/el-5.jpg", aspect: "4 / 3", action: "In Conversation", role: "Creative Director" },
+    { src: "/images/about/el-6.jpg", aspect: "3 / 4", action: "Spotlight", role: "Director" },
+    { src: "/images/about/el-7.jpg", aspect: "4 / 3", action: "Behind the Lens", role: "Videographer" },
+    { src: "/images/about/el-8.jpg", aspect: "3 / 2", action: "Calling the Shot", role: "Creative Director" },
   ] as GalleryShot[],
 } as const;
 
@@ -134,50 +123,249 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+/** Pull the 11-char video id out of a youtu.be / watch?v= URL. */
+const ytId = (url: string) => {
+  const m = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : "";
+};
+
+/** Local copy of each video's YouTube thumbnail (see public/images/works). */
+const ytThumb = (url: string) => `/images/works/${ytId(url)}.jpg`;
+
 const PROJECT_THUMBS = [
   "/images/palmwine-poster.jpg",
   "/images/hero-poster.jpg",
 ] as const;
 
-export const projects: Project[] = [
-  "Trace Live with Fireboy",
-  "Trace Live with Wandecoal",
-  "PALMWINE FEST_ (The Making)_Documentry",
-  "IB QUAKE_Lord's Achievers Awards_ INTERVIEW_2024",
-  "Lord's Gin Achievers Awards - [JOHNNY DRILLE]",
-  "SWEET 16: PDSTRN - #TraceSweet16",
-  "Get to Know Olumide Oworu",
-  "Get To Know Dami Oniru",
-  "Get to Know: YKB",
-  "How Angel Became Africa's Billionaire Stylist",
-  "How Ireti Built Africa's Largest Street Wear Convention",
-  "TRACE SESSIONS with MOHBAD - #TraceSessions",
-  "Feminist and Marriage | THE DIALOGUE ON SNOOPER",
-  "TRACE LIVE with FIREBOY - 2023",
-  "TRACE LIVE with CHIKE - 2023",
-  "FLAVOUR'S HOMECOMING CONCERT @UMUNZE",
-  "Hennessy VS Class VIII Episode 5",
-  "TRACE SESSIONS with Vector #TraceSessions",
-  "TRACE MENTAL HEALTH CAMPAIGN AWARENESS VIDEO",
-  "RICKROSSxDAVIDO CONCERT_LAGOS",
-].map((title, i) => {
-  const s = slug(title);
-  const thumb = PROJECT_THUMBS[i % PROJECT_THUMBS.length];
+/** The real catalogue. `category` surfaces as the "Services"/type label; the
+ *  role credits stack on the detail page. Thumbnails/hero stills are still the
+ *  two ship-ready placeholders until graded stills are delivered. */
+const PROJECT_DATA: {
+  title: string;
+  category: string;
+  year: string;
+  role: string[];
+  client: string;
+  description: string;
+  youtubeUrl: string;
+}[] = [
+  {
+    title: "Talking the Most — Prandas",
+    category: "Music Video",
+    year: "2026",
+    role: ["Editor", "Colorist"],
+    client: "Prandas",
+    description:
+      "A performance-driven visual piece built around Prandas' presence, energy, and distinct musical identity. I contributed to the visual execution, using cinematic framing, movement, and rhythm to create an immersive visual world that complements the track.",
+    youtubeUrl: "https://www.youtube.com/watch?v=Bgx95FVAoM8",
+  },
+  {
+    title: "Sooyah Bistro",
+    category: "Brand Documentary",
+    year: "2025",
+    role: ["Editor", "Colorist"],
+    client: "Sooyah Bistro",
+    description:
+      "A cinematic documentary exploring the story, atmosphere, and identity behind Sooyah Bistro. The film uses intimate moments, rich visuals, and observational storytelling to capture the people, culture, and experience that define the brand.",
+    youtubeUrl: "https://youtu.be/BPLOhvkpE5I",
+  },
+  {
+    title: "TraceLive with Ruger",
+    category: "TV Commercial",
+    year: "2025",
+    role: ["Director", "Editor", "Colorist"],
+    client: "Trace",
+    description:
+      "A high-energy visual campaign built around the raw energy and personality of Ruger, capturing the spirit of TRACE Live through dynamic performance, bold imagery, and a fast-paced cinematic approach.",
+    youtubeUrl: "https://youtu.be/j0-GoI2b7Pc",
+  },
+  {
+    title: "Adroh Homes",
+    category: "TV Commercial",
+    year: "2025",
+    role: ["Creative Director", "Editor"],
+    client: "Adroh Homes",
+    description:
+      "A culturally rooted commercial inspired by the colour, elegance, and spectacle of Ojude Oba. I contributed to the visual execution, capturing the celebration through cinematic compositions, vibrant imagery, and a strong sense of place and tradition.",
+    youtubeUrl: "https://youtu.be/NpVuuC07kZ0",
+  },
+  {
+    title: "American Cola",
+    category: "Digital Commercial",
+    year: "2025",
+    role: ["Editor", "Colorist"],
+    client: "American Cola",
+    description:
+      "A vibrant TV commercial for American Cola, created to capture the energy, refreshment, and youthful spirit of the brand through dynamic visuals and engaging storytelling.",
+    youtubeUrl: "https://youtu.be/uaxwfqOuOU8",
+  },
+  {
+    title: "Palmwine Fest — The Making",
+    category: "Documentary",
+    year: "2024",
+    role: ["Editor", "Colorist"],
+    client: "Palmwine Fest",
+    description:
+      "A behind-the-scenes documentary capturing the energy, scale, and creative process behind Palmwine Fest. Through intimate moments, candid perspectives, and cinematic imagery, the film explores the people and production that bring the festival experience to life.",
+    youtubeUrl: "https://youtu.be/WPUffgFapd8",
+  },
+  {
+    title: "Lord's Achievers Awards — IB Quake",
+    category: "Interview",
+    year: "2024",
+    role: ["Director", "Cinematographer", "Editor"],
+    client: "Lord's Gin",
+    description:
+      "A character-driven interview capturing IB Quake's journey, personality, and creative perspective with the elegance and atmosphere of the Lord's Gin Achievers Awards.",
+    youtubeUrl: "https://youtu.be/2hBNssMe0bM",
+  },
+  {
+    title: "Lord's Achievers Awards — Johnny Drille",
+    category: "Interview",
+    year: "2023",
+    role: ["Cinematographer", "Editor"],
+    client: "Lord's Gin",
+    description:
+      "A cinematic artist profile capturing Johnny Drille beyond the stage, blending intimate portraiture with the elegance and atmosphere of the Lord's Gin Achievers Awards.",
+    youtubeUrl: "https://youtu.be/ltywxkqvzp4",
+  },
+  {
+    title: "Trace Mental Health Campaign",
+    category: "Short Documentary",
+    year: "2022",
+    role: ["Director", "Editor", "Colorist"],
+    client: "Trace",
+    description:
+      "A socially driven campaign film created to spark conversation around mental health and emotional wellbeing. I contributed to the visual execution, using intimate performances and cinematic framing to communicate the campaign's message with honesty and emotional weight.",
+    youtubeUrl: "https://youtu.be/-xOwXtaQRts",
+  },
+  {
+    title: "Trace Sessions with Fola",
+    category: "Music Performance",
+    year: "2025",
+    role: ["Creative Director", "Editor"],
+    client: "Trace",
+    description:
+      "A cinematic live-session experience capturing Fola's distinctive sound and energy. I contributed to the visual execution, using intimate framing, dynamic camera movement, and atmospheric imagery to create a visual world that complements the music and performance.",
+    youtubeUrl: "https://youtu.be/H1gb-_llab8",
+  },
+  {
+    title: "Trace Sessions with Mohbad",
+    category: "Music Performance",
+    year: "2023",
+    role: ["Editor"],
+    client: "Trace",
+    description:
+      "A cinematic live-session capturing Mohbad's raw energy, personality, and unmistakable sound. I contributed to the visual execution, using dynamic camera movement, intimate framing, and atmospheric imagery to translate the energy of his performance into a compelling visual experience.",
+    youtubeUrl: "https://youtu.be/lztk0SWApAw",
+  },
+  {
+    title: "Get to Know — Dami Oniru",
+    category: "Editorial",
+    year: "2024",
+    role: ["Editor", "Colorist"],
+    client: "Dami Oniru",
+    description:
+      "A character-driven profile exploring Dami Oniru's creative journey, personality, and perspective as an artist. I contributed to the visual execution, using intimate framing, considered compositions, and a relaxed cinematic approach to create an authentic portrait that lets her story and personality lead.",
+    youtubeUrl: "https://youtu.be/Dh2nLfUEfB8",
+  },
+  {
+    title: "Get to Know — Olumide Oworu",
+    category: "Editorial",
+    year: "2024",
+    role: ["Editor", "Colorist"],
+    client: "Olumide Oworu",
+    description:
+      "A character-driven profile offering an intimate look into Olumide Oworu's personality, journey, and life beyond the screen. I contributed to the visual execution, using cinematic framing, natural performances, and a considered visual rhythm to create an authentic portrait of the actor.",
+    youtubeUrl: "https://youtu.be/ZgpxbMEt-y4",
+  },
+  {
+    title: "Victoria Orenze — Father We Are Grateful",
+    category: "Music Performance",
+    year: "2025",
+    role: ["Creative Director", "Editor", "Colorist"],
+    client: "Victoria Orenze",
+    description:
+      "A cinematic worship film built around intimacy, emotion, and spiritual expression. I contributed to the visual execution, using atmospheric lighting, intentional framing, and fluid movement to create a visual experience that complements Victoria Orenze's powerful performance.",
+    youtubeUrl: "https://youtu.be/_CmXr8vbS0k",
+  },
+  {
+    title: "This Week Tonight — Nescafé (Ep. 3)",
+    category: "Brand Campaign",
+    year: "2026",
+    role: ["Director", "Editor", "Colorist"],
+    client: "Nescafé",
+    description:
+      "A high-energy branded content piece built around anticipation, excitement, and the reveal of the third draw winners. I contributed to the visual execution, using dynamic coverage, energetic pacing, and polished compositions to build momentum and capture the excitement of the moment.",
+    youtubeUrl: "https://youtu.be/JMu_8y4YCaU",
+  },
+  {
+    title: "This Week Tonight — Nescafé (Ep. 2)",
+    category: "Brand Campaign",
+    year: "2026",
+    role: ["Director", "Editor", "Colorist"],
+    client: "Nescafé",
+    description:
+      "A high-energy branded content piece built around anticipation, excitement, and the reveal of the second draw winners. I contributed to the visual execution, using dynamic coverage, energetic pacing, and polished compositions to build momentum and capture the excitement of the moment.",
+    youtubeUrl: "https://youtu.be/SW0ExaiVgXY",
+  },
+  {
+    title: "Flavour's Homecoming Concert",
+    category: "Event Recap",
+    year: "2022",
+    role: ["Cinematographer", "Editor", "Colorist"],
+    client: "Flavour",
+    description:
+      "A cinematic edit capturing the energy, scale, and cultural spirit of Flavour's homecoming concert in Umunze. I shaped the footage into an immersive visual experience, blending performance, atmosphere, and intimate moments to tell the story of a celebration rooted in music, community, and home.",
+    youtubeUrl: "https://youtu.be/L7pGWZiu-8E",
+  },
+  {
+    title: "TraceLive with Wande Coal",
+    category: "Event Recap",
+    year: "2023",
+    role: ["Editor", "Colorist"],
+    client: "Trace",
+    description:
+      "A cinematic concert film capturing Wande Coal's commanding stage presence and the electric atmosphere of TRACE Live. I contributed to the visual execution and edit, shaping the energy of the performance, crowd, and live experience into a dynamic visual story.",
+    youtubeUrl: "https://youtu.be/usRUgdnJ6s0",
+  },
+  {
+    title: "Hennessy VS Class VIII — Ep. 3",
+    category: "TV Show",
+    year: "2022",
+    role: ["Editor"],
+    client: "Hennessy",
+    description:
+      "A high-energy episode of Hennessy VS Class, capturing the intensity, personality, and competitive spirit of Nigeria's emerging MCs. I contributed to the visual execution, using dynamic coverage, fast-paced editing, and cinematic imagery to bring the battle and culture of the series to life.",
+    youtubeUrl: "https://youtu.be/yb0MomsOSAg",
+  },
+  {
+    title: "Hennessy VS Class VIII — Ep. 5",
+    category: "TV Show",
+    year: "2022",
+    role: ["Editor"],
+    client: "Hennessy",
+    description:
+      "A high-energy episode of Hennessy VS Class that captures the tension, personality, and competitive spirit of the MCs as they battle for their place in the competition. I contributed to the visual execution, using dynamic coverage, cinematic compositions, and fast-paced editing to amplify the energy of the series.",
+    youtubeUrl: "https://youtu.be/ySmNbUmo5cE",
+  },
+];
+
+export const projects: Project[] = PROJECT_DATA.map((p, i) => {
+  const s = slug(p.title);
+  const thumb = ytThumb(p.youtubeUrl) || PROJECT_THUMBS[i % PROJECT_THUMBS.length];
   return {
     id: `${s}-${i}`,
     slug: s,
-    title,
-    client: "Trace",
-    year: "2024",
-    services: "Creative direction, editing, producing",
-    role: ["Creative direction", "Editing", "Colouring"],
-    // Placeholder copy — swap for the real project write-up before launch.
-    description: `${title} is a Trace production directed, edited and coloured in-house at AreyouDami. We shaped the story in the edit — pacing the energy of the room, grading for mood and finishing to a broadcast-ready master.`,
+    title: p.title,
+    client: p.client,
+    year: p.year,
+    services: p.category,
+    role: p.role,
+    description: p.description,
     thumbnail: thumb,
-    // Placeholder — reuse the poster until a graded hero still ships.
     heroImage: thumb,
-    // Placeholder — point each at its real YouTube upload before launch.
-    youtubeUrl: "https://www.youtube.com/@areyoudami",
+    youtubeUrl: p.youtubeUrl,
     href: `/works/${s}`,
   };
 });
@@ -195,85 +383,25 @@ export type Work = {
 };
 
 /**
- * Selected works. These scroll through the works section one project at a
- * time (fela.tv-style), with a side indicator tracking 1 → 8.
+ * Selected works — the FIRST 8 of the catalogue, scrolling through the works
+ * section one project at a time (fela.tv-style), side indicator 1 → 8.
  *
- * NOTE: only two source clips were provided (palmwine + showreel-bg). As a
- * PLACEHOLDER they're reused here, each panel showing a different 5-second
- * window (`clipStart`) on loop. Swap `video`/`poster` for the real graded
- * preview per project as final footage is delivered.
+ * NOTE: real preview clips weren't provided (the catalogue links to YouTube),
+ * so the two ship-ready source clips (palmwine + showreel-bg) are reused here
+ * as PLACEHOLDER previews — each panel loops a different 5-second window
+ * (`clipStart`). Swap `video`/`poster` per project as final footage is delivered.
  */
-export const featuredWorks: Work[] = [
-  {
-    title: "Palmwine Documentary",
-    category: "Commercial",
-    year: "2023",
-    runtime: 5,
-    clipStart: 0,
-    poster: "/images/palmwine-poster.jpg",
-    video: { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" },
-  },
-  {
-    title: "Lagos After Dark",
-    category: "Music Video",
-    year: "2024",
-    runtime: 5,
-    clipStart: 0,
-    poster: "/images/hero-poster.jpg",
-    video: { mp4: "/videos/showreel-bg.mp4" },
-  },
-  {
-    title: "Gold & Grit",
-    category: "Commercial",
-    year: "2023",
-    runtime: 5,
-    clipStart: 10,
-    poster: "/images/palmwine-poster.jpg",
-    video: { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" },
-  },
-  {
-    title: "Echoes of Home",
-    category: "Short Film",
-    year: "2022",
-    runtime: 5,
-    clipStart: 8,
-    poster: "/images/hero-poster.jpg",
-    video: { mp4: "/videos/showreel-bg.mp4" },
-  },
-  {
-    title: "Neon Harmattan",
-    category: "Fashion Film",
-    year: "2024",
-    runtime: 5,
-    clipStart: 5,
-    poster: "/images/palmwine-poster.jpg",
-    video: { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" },
-  },
-  {
-    title: "The Last Danfo",
-    category: "Documentary",
-    year: "2023",
-    runtime: 5,
-    clipStart: 4,
-    poster: "/images/hero-poster.jpg",
-    video: { mp4: "/videos/showreel-bg.mp4" },
-  },
-  {
-    title: "Sunlight Sessions",
-    category: "Music Video",
-    year: "2022",
-    runtime: 5,
-    clipStart: 14,
-    poster: "/images/palmwine-poster.jpg",
-    video: { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" },
-  },
-  {
-    title: "Becoming",
-    category: "Brand Film",
-    year: "2024",
-    runtime: 5,
-    clipStart: 12,
-    poster: "/images/hero-poster.jpg",
-    video: { mp4: "/videos/showreel-bg.mp4" },
-  },
-];
+const FW_CLIP_START = [0, 6, 10, 8, 5, 4, 14, 12] as const;
+
+export const featuredWorks: Work[] = PROJECT_DATA.slice(0, 8).map((p, i) => ({
+  title: p.title,
+  category: p.category,
+  year: p.year,
+  runtime: 5,
+  clipStart: FW_CLIP_START[i],
+  poster: ytThumb(p.youtubeUrl),
+  video:
+    i % 2 === 0
+      ? { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" }
+      : { mp4: "/videos/showreel-bg.mp4" },
+}));
