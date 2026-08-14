@@ -21,13 +21,13 @@ export default function WorksViewSwitcher({
 }) {
   return (
     <div className="flex h-14 items-center gap-4">
-      <span className="font-sans text-[15px] font-medium text-primary">
+      <span className="font-sans text-base font-medium text-primary">
         Works.
       </span>
       <div
         role="group"
         aria-label="Choose a view"
-        className="flex items-center gap-2 font-sans text-[13px] tracking-wide"
+        className="flex items-center gap-2 font-sans text-sm tracking-wide"
       >
         {WORKS_VIEWS.map(({ id, label }) => {
           const active = id === view;

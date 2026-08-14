@@ -51,7 +51,7 @@ export default function ContactExperience() {
 
   // Lens (aperture size). Click cycles it; a ref feeds the rAF loop.
   const [lens, setLens] = useState(1); // start on 50mm
-  const targetR = useRef(LENSES[1].radius);
+  const targetR = useRef<number>(LENSES[1].radius);
   const [focusing, setFocusing] = useState(false);
   useEffect(() => {
     targetR.current = LENSES[lens].radius;
@@ -140,7 +140,7 @@ export default function ContactExperience() {
             style={{ opacity: i === idx ? 1 : 0 }}
           />
         ))}
-        <div className="absolute inset-0 bg-ink/25" />
+        <div className="absolute inset-0 bg-ink/50 md:bg-ink/25" />
       </div>
 
       {/* Layer 1 — black + faint grid backdrop, opened up by the aperture */}
@@ -168,14 +168,14 @@ export default function ContactExperience() {
         className="relative z-10 flex min-h-screen items-center px-[var(--gutter)] pb-24 pt-[150px] mix-blend-difference md:pt-[200px]"
       >
         <div className="grid w-full grid-cols-1 gap-12 md:grid-cols-2 md:items-center md:gap-16">
-          <h1 className="font-display text-[clamp(2.75rem,7vw,6.5rem)] font-bold leading-[0.92] tracking-[-0.02em] text-paper">
+          <h1 className="font-display text-[clamp(2.5rem,7vw,6.5rem)] font-bold leading-[1.05] tracking-[-0.02em] text-paper md:leading-[0.92]">
             Let&apos;s work
             <br />
             together.
           </h1>
 
           <div className="max-w-md">
-            <p className="font-sans text-[15px] leading-relaxed text-paper md:text-lg">
+            <p className="font-sans text-base leading-relaxed text-paper md:text-lg">
               Have a project in mind or want to collaborate? Get in touch below.
             </p>
 
@@ -232,7 +232,7 @@ export default function ContactExperience() {
         <span className="absolute bottom-0 left-1/2 h-2.5 w-px -translate-x-1/2 translate-y-1/2 bg-primary/70" />
         <span className="absolute left-0 top-1/2 h-px w-2.5 -translate-x-1/2 -translate-y-1/2 bg-primary/70" />
         <span className="absolute right-0 top-1/2 h-px w-2.5 -translate-y-1/2 translate-x-1/2 bg-primary/70" />
-        <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[150%] whitespace-nowrap font-sans text-[11px] font-medium uppercase tracking-[0.22em] text-primary">
+        <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[150%] whitespace-nowrap font-sans text-xs font-medium uppercase tracking-[0.22em] text-primary">
           {LENSES[lens].label}
         </span>
       </div>

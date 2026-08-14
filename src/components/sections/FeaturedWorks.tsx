@@ -263,7 +263,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
             {/* Category tag — Inter 12px / medium / 0 tracking */}
             <motion.span
               data-tag
-              className="inline-block rounded-[6px] border border-primary px-2.5 py-1 font-sans text-[12px] font-medium tracking-[0] text-primary"
+              className="inline-block rounded-[6px] border border-primary px-2.5 py-1 font-sans text-xs font-medium tracking-[0] text-primary"
               initial={{ opacity: 0, y: 14 }}
               animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.6, ease: easeSmooth }}
@@ -272,7 +272,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
             </motion.span>
 
             {/* Title — Inter 96px / extrabold / 90% lh / -2px tracking / max 2 lines */}
-            <h2 className="mt-2 max-w-[40rem] font-sans text-[3.25rem] font-extrabold leading-[0.9] tracking-[-2px] text-primary md:text-[96px]">
+            <h2 className="mt-2 max-w-[40rem] font-sans text-[3.25rem] font-extrabold leading-[0.9] tracking-[-2px] text-primary md:text-8xl">
               <span className="block overflow-hidden pb-[0.1em]">
                 <motion.span
                   className="block"
@@ -287,7 +287,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
 
             {/* Year — Inter 16px / extrabold / 0 tracking */}
             <motion.p
-              className="mt-2 font-sans text-[16px] font-extrabold tracking-[0] tabular-nums text-primary"
+              className="mt-2 font-sans text-base font-extrabold tracking-[0] tabular-nums text-primary"
               initial={{ opacity: 0 }}
               animate={active ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease: easeSmooth }}
@@ -370,7 +370,7 @@ function WorkTransport({
             <PlayCircleIcon className="h-6 w-6" />
           )}
         </button>
-        <span className="font-sans text-[13px] font-medium tabular-nums tracking-wide text-primary">
+        <span className="font-sans text-sm font-medium tabular-nums tracking-wide text-primary">
           {timecode(current)}/{timecode(len)}
         </span>
       </div>

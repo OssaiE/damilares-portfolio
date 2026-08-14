@@ -26,12 +26,12 @@ export default function MoreWork({ projects }: { projects: Project[] }) {
   return (
     <section className="px-[var(--gutter)] pb-24 pt-4">
       <div className="mb-8 flex items-center justify-between">
-        <h2 className="font-sans text-[15px] font-medium text-primary">
+        <h2 className="font-sans text-base font-medium text-primary">
           More work
         </h2>
         <Link
           href="/works?view=grid"
-          className="font-sans text-[13px] tracking-wide text-paper/80 outline-none transition-colors hover:text-primary focus-visible:text-primary"
+          className="font-sans text-sm tracking-wide text-paper/80 outline-none transition-colors hover:text-primary focus-visible:text-primary"
         >
           [ See more ]
         </Link>

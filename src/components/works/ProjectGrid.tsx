@@ -130,7 +130,7 @@ function GridCard({
           {/* "View project" label */}
           {active && (
             <motion.span
-              className="pointer-events-none absolute z-10 whitespace-nowrap bg-primary px-2.5 py-1 text-[12px] font-medium text-ink"
+              className="pointer-events-none absolute z-10 whitespace-nowrap bg-primary px-2.5 py-1 text-xs font-medium text-ink"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
@@ -155,10 +155,10 @@ function GridCard({
           )}
         </div>
 
-        <h3 className="mt-3 font-sans text-[15px] font-medium text-paper">
+        <h3 className="mt-3 font-sans text-base font-medium text-paper">
           {project.title}
         </h3>
-        <p className="mt-1 font-sans text-[13px] text-subtext">
+        <p className="mt-1 font-sans text-sm text-subtext">
           {project.services}
         </p>
       </Link>

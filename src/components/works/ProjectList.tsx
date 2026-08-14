@@ -57,7 +57,7 @@ export default function ProjectList({
     <div ref={containerRef} className="relative px-[var(--gutter)]">
       {/* Column headings */}
       <div
-        className={`hidden border-b border-white/10 pb-3 font-sans text-[13px] text-subtext ${COLS}`}
+        className={`hidden border-b border-white/10 pb-3 font-sans text-sm text-subtext ${COLS}`}
       >
         <span>Projects</span>
         <span>Client</span>
@@ -98,11 +98,11 @@ export default function ProjectList({
                   className="pointer-events-none absolute inset-y-0 left-[calc(var(--gutter)*-1)] right-[calc(var(--gutter)*-1)] bg-primary transition-opacity duration-150"
                   style={{ opacity: active ? 1 : 0 }}
                 />
-                <span className="relative z-[1] block font-sans text-[15px]">
+                <span className="relative z-[1] block font-sans text-base">
                   {project.title}
                 </span>
                 <span
-                  className={`relative z-[1] mt-1 block font-sans text-[13px] md:mt-0 md:text-[15px] ${
+                  className={`relative z-[1] mt-1 block font-sans text-sm md:mt-0 md:text-base ${
                     active ? "text-ink" : "text-subtext md:text-paper"
                   }`}
                 >
@@ -111,11 +111,11 @@ export default function ProjectList({
                   </span>
                   <span className="hidden md:inline">{project.client}</span>
                 </span>
-                <span className="relative z-[1] hidden font-sans text-[15px] md:block">
+                <span className="relative z-[1] hidden font-sans text-base md:block">
                   {project.year}
                 </span>
                 <span
-                  className={`relative z-[1] mt-1 block font-sans text-[13px] md:mt-0 md:text-[15px] ${
+                  className={`relative z-[1] mt-1 block font-sans text-sm md:mt-0 md:text-base ${
                     active ? "text-ink" : "text-subtext md:text-paper"
                   }`}
                 >

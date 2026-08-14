@@ -26,8 +26,8 @@ export default function ProjectHero({ project }: { project: Project }) {
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/55 via-transparent to-ink/90"
       />
 
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 px-[var(--gutter)] pb-10 md:pb-14">
-        <h1 className="max-w-[80%] font-sans text-[clamp(2.25rem,7vw,96px)] font-extrabold leading-[0.95] tracking-[-0.02em] text-primary [text-wrap:balance]">
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-5 px-[var(--gutter)] pb-10 md:flex-row md:items-end md:justify-between md:gap-6 md:pb-14">
+        <h1 className="max-w-full font-sans text-[clamp(2.25rem,7vw,96px)] font-extrabold leading-[0.95] tracking-[-0.02em] text-primary [text-wrap:balance] md:max-w-[80%]">
           {project.title}
         </h1>
 
@@ -37,7 +37,7 @@ export default function ProjectHero({ project }: { project: Project }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Watch ${project.title} on YouTube`}
-            className="group inline-flex shrink-0 items-center gap-2 rounded-[3px] bg-primary px-4 py-2.5 text-[13px] font-semibold text-ink outline-none ring-primary transition-[background-color,color,transform] duration-300 hover:-translate-y-px hover:bg-ink hover:text-primary hover:ring-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+            className="group inline-flex shrink-0 items-center gap-2 rounded-[3px] bg-primary px-4 py-2.5 text-sm font-semibold text-ink outline-none ring-primary transition-[background-color,color,transform] duration-300 hover:-translate-y-px hover:bg-ink hover:text-primary hover:ring-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
           >
             Watch on YouTube
             <YouTubeIcon className="h-4 w-4" />

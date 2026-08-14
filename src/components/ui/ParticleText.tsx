@@ -46,6 +46,13 @@ export default function ParticleText({
   target.current = hovering && enabled ? 1 : 0;
 
   useEffect(() => {
+    // The particle field is desktop / fine-pointer only. Building it means
+    // rasterising the wordmark and reading back a full-width canvas to seed up
+    // to 45k particles — far too heavy for phones, and large enough to blow the
+    // canvas memory limit on mobile Safari (which then throws / freezes the whole
+    // page). When disabled we do nothing and MaskedWordmark shows its SVG type.
+    if (!enabled) return;
+
     const canvas = canvasRef.current;
     const parent = canvas?.parentElement;
     const ctx = canvas?.getContext("2d");
@@ -202,9 +209,10 @@ export default function ParticleText({
       ro.disconnect();
       window.removeEventListener("resize", onDpr);
     };
-    // Mount-once: pointer/onReady are stable refs/callbacks captured on mount.
+    // pointer/onReady are stable refs/callbacks; re-run only when `enabled`
+    // toggles (so the field builds once the desktop check passes).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
     const c = canvasRef.current as unknown as { __kick?: () => void } | null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { scrollControl } from "@/lib/scrollControl";
 
@@ -19,9 +19,22 @@ const DURATION = 900; // ms per section glide
  */
 export default function SectionScroller() {
   const reduce = useReducedMotion();
+  const [hijack, setHijack] = useState(false);
+
+  // Section-snapping (and its `touchmove` preventDefault) is a desktop-with-a-
+  // mouse conceit — on touch devices it kills native scrolling and freezes the
+  // page. Only a fine pointer on a ≥768px viewport opts in; phones/tablets
+  // scroll normally.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px) and (pointer: fine)");
+    const update = () => setHijack(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
-    if (reduce) return;
+    if (reduce || !hijack) return;
 
     // The CSS `scroll-behavior: smooth` would re-animate on every rAF scrollTo,
     // fighting our tween — force instant scrolling while we own the motion.
@@ -183,7 +196,7 @@ export default function SectionScroller() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", collect);
     };
-  }, [reduce]);
+  }, [reduce, hijack]);
 
   return null;
 }

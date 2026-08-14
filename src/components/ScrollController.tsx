@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { useLenis } from "lenis/react";
 import { scrollControl } from "@/lib/scrollControl";
@@ -22,9 +22,22 @@ const DURATION = 0.95; // seconds — a touch longer for a smoother arrival
 export default function ScrollController() {
   const lenis = useLenis();
   const reduce = useReducedMotion();
+  const [hijack, setHijack] = useState(false);
+
+  // Section-snapping is a desktop-with-a-mouse conceit. On touch devices
+  // (phones / tablets) hijacking `touchmove` fights the browser's native
+  // scrolling and leaves the page feeling frozen — so there we do nothing and
+  // let it scroll normally. Only a fine pointer on a ≥768px viewport opts in.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px) and (pointer: fine)");
+    const update = () => setHijack(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
-    if (reduce) return;
+    if (reduce || !hijack) return;
 
     let sections: HTMLElement[] = [];
     const collect = () => {
@@ -205,7 +218,7 @@ export default function ScrollController() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", collect);
     };
-  }, [lenis, reduce]);
+  }, [lenis, reduce, hijack]);
 
   return null;
 }

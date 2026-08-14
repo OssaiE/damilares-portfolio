@@ -117,7 +117,7 @@ export default function CustomCursor() {
             style={{ transform: "translate(-30%, -50%)" }}
           />
         </div>
-        <span className="font-sans text-[9px] font-medium tracking-[0.32em] text-white">
+        <span className="font-sans text-xs font-medium tracking-[0.32em] text-white">
           SHOWREEL
         </span>
       </motion.div>

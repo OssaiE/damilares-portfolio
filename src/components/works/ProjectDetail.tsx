@@ -32,7 +32,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
         topRight={
           <Link
             href="/works?view=grid"
-            className="group relative inline-flex h-14 items-center text-[15px] font-medium text-primary"
+            className="group relative inline-flex h-14 items-center text-base font-medium text-primary"
           >
             Works.
             <span className="absolute bottom-4 left-0 h-px w-full origin-right scale-x-0 bg-primary transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:origin-left group-hover:scale-x-100" />

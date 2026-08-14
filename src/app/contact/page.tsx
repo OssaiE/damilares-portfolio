@@ -20,7 +20,7 @@ export default function ContactPage() {
 
       <SiteChrome
         topRight={
-          <span className="inline-flex h-14 items-center text-[15px] font-medium text-primary">
+          <span className="inline-flex h-14 items-center text-base font-medium text-primary">
             Contact.
           </span>
         }

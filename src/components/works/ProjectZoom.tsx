@@ -250,7 +250,7 @@ function MetaSlot({
       <AnimatePresence initial={false} mode="popLayout">
         <motion.span
           key={value}
-          className="absolute inset-0 flex items-center truncate font-sans text-[14px] text-paper"
+          className="absolute inset-0 flex items-center truncate font-sans text-sm text-paper"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -343,7 +343,7 @@ function ZoomMedia({
             {/* Yellow "View project" label (pointer only), follows the cursor */}
             {canHover && hovered && (
               <motion.span
-                className="pointer-events-none absolute z-10 whitespace-nowrap bg-primary px-2.5 py-1 text-[12px] font-medium text-ink"
+                className="pointer-events-none absolute z-10 whitespace-nowrap bg-primary px-2.5 py-1 text-xs font-medium text-ink"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.15 }}
@@ -362,10 +362,10 @@ function ZoomMedia({
 
         {/* Mobile metadata (no fixed side layer on small screens) */}
         <div className="mt-3 md:hidden">
-          <h3 className="font-sans text-[15px] font-medium text-paper">
+          <h3 className="font-sans text-base font-medium text-paper">
             {project.title}
           </h3>
-          <p className="mt-1 font-sans text-[13px] text-subtext">
+          <p className="mt-1 font-sans text-sm text-subtext">
             {project.services}
           </p>
         </div>

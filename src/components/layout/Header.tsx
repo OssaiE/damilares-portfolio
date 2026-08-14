@@ -104,7 +104,7 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
                           href={item.href}
                           role="menuitem"
                           onClick={close}
-                          className="group inline-flex items-center gap-1.5 font-sans text-[26px] font-medium leading-tight tracking-tight"
+                          className="group inline-flex items-center gap-1.5 font-sans text-2xl font-medium leading-tight tracking-tight"
                           aria-current={active ? "page" : undefined}
                         >
                           <span className="text-ink/45">[</span>
@@ -201,7 +201,7 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
         {topRight ?? (
           <Link
             href="/"
-            className="group relative inline-flex h-14 items-center text-[15px] font-medium text-primary"
+            className="group relative inline-flex h-14 items-center text-base font-medium text-primary"
             tabIndex={open ? -1 : 0}
           >
             Homepage.

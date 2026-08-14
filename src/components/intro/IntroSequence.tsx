@@ -32,7 +32,15 @@ export default function IntroSequence() {
   const [n, setN] = useState(3);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // Skip the cinematic intro on touch devices (phones/tablets) and under
+    // reduced-motion — reveal the site immediately. The intro's animated
+    // mask-image + backdrop-filter blur compositing is very heavy on mobile
+    // Safari and can lock the page up (freezing on a single frame), which then
+    // makes the whole site feel dead behind the overlay.
+    const skip =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(pointer: coarse)").matches;
+    if (skip) {
       reveal();
       setStage("gone");
       return;
@@ -59,7 +67,7 @@ export default function IntroSequence() {
 
   return (
     <motion.div
-      className="fixed -inset-2 z-[200]"
+      className="pointer-events-none fixed -inset-2 z-[200]"
       aria-hidden
       animate={{
         x: stage === "camera" ? [0, 2, -1.4, 1, -1, 0.5, 0] : 0,
@@ -92,16 +100,9 @@ export default function IntroSequence() {
       {revealing && (
         <motion.div
           className="absolute inset-0"
-          initial={{ backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}
+          initial={{ backdropFilter: "blur(24px)" }}
           animate={{
             backdropFilter: [
-              "blur(24px)",
-              "blur(4px)",
-              "blur(13px)",
-              "blur(1px)",
-              "blur(0px)",
-            ],
-            WebkitBackdropFilter: [
               "blur(24px)",
               "blur(4px)",
               "blur(13px)",

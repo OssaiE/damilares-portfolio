@@ -123,7 +123,7 @@ export default function Hero() {
           {/* Copy + lenses start low (over where the wordmark will sit) and get
               lifted to their resting spot as the wordmark blurs in below. */}
           <motion.div
-            className="flex items-end justify-between gap-8"
+            className="flex flex-col items-start gap-4 md:flex-row md:items-end md:justify-between md:gap-8"
             animate={{ y: step >= 3 ? 0 : "17vw" }}
             transition={{ duration: 1.05, ease: easeExpo }}
           >
@@ -134,7 +134,7 @@ export default function Hero() {
             <motion.div
               role="group"
               aria-label="Lens focal length"
-              className="flex shrink-0 items-center gap-2.5"
+              className="flex shrink-0 items-center gap-1.5 md:gap-2.5"
               initial={{ opacity: 0, y: 14 }}
               animate={step >= 2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.7, ease: easeExpo }}
@@ -150,7 +150,7 @@ export default function Hero() {
                       e.stopPropagation();
                       changeLens(l);
                     }}
-                    className={`group flex items-center gap-1 rounded-[5px] px-2.5 py-1 font-sans text-[20px] tracking-wide transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    className={`group flex items-center gap-1 rounded-[5px] px-2 py-1 font-sans text-base tracking-wide transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:px-2.5 md:text-xl ${
                       active
                         ? "border border-primary/70 text-primary"
                         : "border border-transparent text-primary/55 hover:text-primary"
@@ -260,7 +260,7 @@ function TypedCopy({
         return (
           <p
             key={li}
-            className={`min-h-[1.4em] text-[24px] leading-snug text-primary ${gap}`}
+            className={`min-h-[1.4em] text-lg leading-snug text-primary sm:text-xl md:text-2xl ${gap}`}
           >
             {parts}
             {play && typed < total && li === activeLine && (

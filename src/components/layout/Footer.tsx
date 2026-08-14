@@ -107,7 +107,7 @@ export default function Footer({
         <div className="px-6 md:px-14">
           {/* Timecode + yellow rule */}
           <div className="relative">
-            <Timecode className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 font-sans text-[11px] tabular-nums tracking-[0.2em] text-primary/80" />
+            <Timecode className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 font-sans text-xs tabular-nums tracking-[0.2em] text-primary/80" />
             <div className="relative">
               <span className="absolute -left-1 -top-2 h-3 w-3 border-l border-t border-primary" />
               <span className="absolute -right-1 -top-2 h-3 w-3 border-r border-t border-primary" />
@@ -166,7 +166,7 @@ export default function Footer({
           <div className="border-t border-white/10" />
 
           {/* Bottom bar */}
-          <div className="mt-6 flex flex-col items-start justify-between gap-3 text-[11px] tracking-[0.14em] text-subtext md:flex-row md:items-center">
+          <div className="mt-6 flex flex-col items-start justify-between gap-3 text-xs tracking-[0.14em] text-subtext md:flex-row md:items-center">
             <p className="uppercase">
               <a href="https://instagram.com" className="hover:text-paper">
                 Instagram

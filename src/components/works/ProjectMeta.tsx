@@ -10,7 +10,7 @@ export default function ProjectMeta({ project }: { project: Project }) {
     <section className="px-[var(--gutter)] py-16 md:py-24">
       <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.6fr_1fr_1.1fr] md:gap-8">
         {/* Description */}
-        <p className="max-w-xl font-sans text-[13px] leading-relaxed text-subtext md:text-[13.5px]">
+        <p className="max-w-xl font-sans text-sm leading-relaxed text-subtext md:text-sm">
           {project.description}
         </p>
 

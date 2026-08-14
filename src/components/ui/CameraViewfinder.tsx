@@ -112,7 +112,7 @@ export default function CameraViewfinder() {
 
           {/* Minimal focus-lock label */}
           <motion.span
-            className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-sans text-[10px] font-medium tracking-[0.35em] text-primary/60"
+            className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-sans text-xs font-medium tracking-[0.35em] text-primary/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.7] }}
             transition={{ duration: 0.5, delay: 1, ease }}

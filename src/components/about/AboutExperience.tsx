@@ -50,7 +50,7 @@ export default function AboutExperience() {
     <>
       <SiteChrome
         topRight={
-          <span className="inline-flex h-14 items-center text-[15px] font-medium text-primary">
+          <span className="inline-flex h-14 items-center text-base font-medium text-primary">
             About.
           </span>
         }
@@ -105,10 +105,10 @@ function GalleryFrame({ shot }: { shot: GalleryShot }) {
       {/* Black overlay + caption — fade in centred on hover / focus only.
           Top: what he's doing (Inter regular 20). Below: role (Inter semibold 24). */}
       <figcaption className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-ink/0 p-6 text-center opacity-0 transition-[opacity,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-ink/55 group-hover:opacity-100 group-focus-visible:bg-ink/55 group-focus-visible:opacity-100">
-        <p className="font-sans text-[20px] font-normal leading-snug text-primary/80 [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
+        <p className="font-sans text-xl font-normal leading-snug text-primary/80 [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
           {shot.action}
         </p>
-        <p className="font-sans text-[24px] font-semibold leading-snug text-primary [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
+        <p className="font-sans text-2xl font-semibold leading-snug text-primary [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
           {shot.role}
         </p>
       </figcaption>
@@ -319,7 +319,7 @@ function Cinematic() {
               transform: phase >= 2 ? "translateY(0)" : "translateY(24px)",
             }}
           >
-            <h1 className="mb-[7vh] font-sans text-[96px] font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_28px_rgba(0,0,0,0.65)]">
+            <h1 className="mb-[7vh] font-sans text-8xl font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_28px_rgba(0,0,0,0.65)]">
               {about.chapterOne}
             </h1>
 
@@ -329,10 +329,10 @@ function Cinematic() {
                 // The mission — set like a quote pulled from a screenplay.
                 return (
                   <figure key={i} className="mx-auto mb-[16vh] mt-[4vh] max-w-[44ch]">
-                    <blockquote className="text-[18px] italic leading-relaxed text-primary [text-shadow:0_2px_24px_rgba(0,0,0,0.75)] [font-family:'Courier_New',ui-monospace,monospace] md:text-[21px]">
+                    <blockquote className="text-lg italic leading-relaxed text-primary [text-shadow:0_2px_24px_rgba(0,0,0,0.75)] [font-family:'Courier_New',ui-monospace,monospace] md:text-xl">
                       “{para}”
                     </blockquote>
-                    <figcaption className="mt-4 text-[12px] uppercase tracking-[0.28em] text-primary/70 [font-family:'Courier_New',ui-monospace,monospace]">
+                    <figcaption className="mt-4 text-xs uppercase tracking-[0.28em] text-primary/70 [font-family:'Courier_New',ui-monospace,monospace]">
                       — Damilare
                     </figcaption>
                   </figure>
@@ -341,7 +341,7 @@ function Cinematic() {
               return (
                 <p
                   key={i}
-                  className="mx-auto mb-[9vh] max-w-[42ch] font-sans text-[16px] leading-relaxed text-primary/90 [text-shadow:0_2px_24px_rgba(0,0,0,0.75)] md:text-[17px]"
+                  className="mx-auto mb-[9vh] max-w-[42ch] font-sans text-base leading-relaxed text-primary/90 [text-shadow:0_2px_24px_rgba(0,0,0,0.75)] md:text-lg"
                 >
                   {para}
                 </p>
@@ -376,7 +376,7 @@ function Cinematic() {
             <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85 md:text-sm">
               Chapter Two
             </p>
-            <h2 className="mt-3 max-w-[16ch] font-sans text-[96px] font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_30px_rgba(0,0,0,0.6)]">
+            <h2 className="mt-3 max-w-[16ch] font-sans text-8xl font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_30px_rgba(0,0,0,0.6)]">
               {about.chapterTwo}
             </h2>
           </div>
@@ -453,8 +453,8 @@ function Fallback() {
                   key={i}
                   className={`font-sans leading-relaxed ${
                     last
-                      ? "text-[17px] font-medium italic text-primary [font-family:'Courier_New',ui-monospace,monospace]"
-                      : "text-[15px] text-primary/90"
+                      ? "text-lg font-medium italic text-primary [font-family:'Courier_New',ui-monospace,monospace]"
+                      : "text-base text-primary/90"
                   }`}
                 >
                   {para}
@@ -489,10 +489,10 @@ function Fallback() {
                 </figcaption>
               ) : (
                 <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-[var(--gutter)] pb-10">
-                  <p className="font-sans text-[20px] font-normal text-primary/80">
+                  <p className="font-sans text-xl font-normal text-primary/80">
                     {shot.action}
                   </p>
-                  <p className="mt-0.5 font-sans text-[24px] font-semibold text-primary">
+                  <p className="mt-0.5 font-sans text-2xl font-semibold text-primary">
                     {shot.role}
                   </p>
                 </figcaption>
