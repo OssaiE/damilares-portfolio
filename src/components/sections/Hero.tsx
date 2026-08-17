@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import BackgroundVideo from "@/components/ui/BackgroundVideo";
 import FramingGuides from "@/components/ui/FramingGuides";
 import MaskedWordmark from "@/components/ui/MaskedWordmark";
-import ReelModal from "@/components/ui/ReelModal";
 import { useIntro } from "@/components/intro/IntroContext";
 import { hero } from "@/lib/site";
 
@@ -28,7 +27,6 @@ const lensScale: Record<string, number> = {
 export default function Hero() {
   const [lens, setLens] = useState("135mm");
   const [focusing, setFocusing] = useState(false);
-  const [reelOpen, setReelOpen] = useState(false);
 
   // Entrance staging (gated on the intro reveal): type the copy → chips →
   // wordmark. `step` = 0 hidden · 1 typing · 2 chips · 3 wordmark.
@@ -63,10 +61,8 @@ export default function Hero() {
   return (
     <>
       <motion.section
-        data-cursor="lens"
         data-snap
-        onClick={() => setReelOpen(true)}
-        aria-label="Showreel"
+        aria-label="Intro"
         className="relative isolate h-[100svh] min-h-[620px] w-full overflow-hidden bg-ink"
         animate={{
           x: shaking ? [0, 1.6, -1.1, 1, -1.3, 0.6, 0] : 0,
@@ -123,7 +119,7 @@ export default function Hero() {
           {/* Copy + lenses start low (over where the wordmark will sit) and get
               lifted to their resting spot as the wordmark blurs in below. */}
           <motion.div
-            className="flex flex-col items-start gap-4 md:flex-row md:items-end md:justify-between md:gap-8"
+            className="flex flex-col items-start gap-6 md:flex-row md:items-end md:justify-between md:gap-8"
             animate={{ y: step >= 3 ? 0 : "17vw" }}
             transition={{ duration: 1.05, ease: easeExpo }}
           >
@@ -175,25 +171,11 @@ export default function Hero() {
               top, so a vw-based negative margin pulls the copy onto them and
               overlaps by ~12px. It drives its own blur-in via `reveal` so the
               wordmark actually blurs up (not a hard pop) as the copy lifts. */}
-          <div className="pointer-events-none -mt-[5.4vw]">
+          <div className="pointer-events-none mt-8 md:-mt-[5.4vw]">
             <MaskedWordmark reveal={step >= 3} />
           </div>
         </div>
-
-        {/* Accessible affordance for the click-to-play interaction */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setReelOpen(true);
-          }}
-          className="sr-only focus:not-sr-only focus:absolute focus:left-[var(--gutter)] focus:top-24 focus:z-30 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-ink"
-        >
-          Play showreel
-        </button>
       </motion.section>
-
-      <ReelModal open={reelOpen} onClose={() => setReelOpen(false)} />
     </>
   );
 }

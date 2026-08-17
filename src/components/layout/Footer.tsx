@@ -103,14 +103,13 @@ export default function Footer({
         <Bracket className="-bottom-8 left-0 border-b border-l" />
         <Bracket className="-bottom-8 right-0 border-b border-r" />
 
-        {/* Inset content — sits inside the frame, not touching the brackets */}
-        <div className="px-6 md:px-14">
+        {/* Inset content — sits inside the frame, not touching the brackets.
+            Flush to the 16px gutter on mobile (matches the nav bar). */}
+        <div className="px-0 lg:px-14">
           {/* Timecode + yellow rule */}
           <div className="relative">
             <Timecode className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 font-sans text-xs tabular-nums tracking-[0.2em] text-primary/80" />
-            <div className="relative">
-              <span className="absolute -left-1 -top-2 h-3 w-3 border-l border-t border-primary" />
-              <span className="absolute -right-1 -top-2 h-3 w-3 border-r border-t border-primary" />
+            <div className="relative mx-6 lg:mx-0">
               <motion.div
                 className="h-px w-full origin-center bg-primary/80"
                 initial={{ scaleX: 0 }}
@@ -121,13 +120,13 @@ export default function Footer({
           </div>
 
           {/* Meta columns */}
-          <dl className="mt-10 grid grid-cols-2 gap-y-8 md:grid-cols-4 md:gap-0">
+          <dl className="mt-10 grid grid-cols-2 gap-y-8 lg:grid-cols-4 lg:gap-0">
             {meta.map((m, i) => (
               <motion.div
                 key={m.label}
-                className={`px-1 text-center md:px-8 ${
-                  i > 0 ? "md:border-l md:border-white/10" : ""
-                }`}
+                className={`px-1 text-center lg:px-8 ${
+                  i % 2 === 1 ? "border-l border-white/10" : ""
+                } ${i > 0 ? "lg:border-l lg:border-white/10" : ""}`}
                 initial={{ opacity: 0, y: 18 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.7, delay: 0.1 * i, ease: easeExpo }}
@@ -153,31 +152,32 @@ export default function Footer({
             ))}
           </dl>
 
-          <div className="mt-12 border-t border-white/10" />
+          <div className="mx-6 mt-12 border-t border-white/10 lg:mx-0" />
 
           {/* Big wordmark */}
-          <div className="flex items-center justify-center py-14 md:py-20">
+          <div className="flex items-center justify-center py-14 lg:py-20">
             <Wordmark
               as="p"
-              className="text-[15vw] leading-none text-paper md:text-[11vw] lg:text-[9vw]"
+              className="text-[11vw] leading-none text-paper lg:text-[9vw]"
             />
           </div>
 
-          <div className="border-t border-white/10" />
+          <div className="mx-6 border-t border-white/10 lg:mx-0" />
 
           {/* Bottom bar */}
-          <div className="mt-6 flex flex-col items-start justify-between gap-3 text-xs tracking-[0.14em] text-subtext md:flex-row md:items-center">
-            <p className="uppercase">
+          <div className="mt-6 flex flex-col items-center gap-4 text-center text-xs tracking-[0.14em] text-subtext lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:text-left">
+            <p className="normal-case lg:uppercase">
               <a href="https://instagram.com" className="hover:text-paper">
                 Instagram
               </a>{" "}
               •{" "}
               <a href="https://linkedin.com" className="hover:text-paper">
                 LinkedIn
-              </a>{" "}
-              • {site.phone}
+              </a>
+              {/* phone shown from tablet up only */}
+              <span className="hidden lg:inline"> • {site.phone}</span>
             </p>
-            <p className="flex items-center gap-1.5 uppercase">
+            <p className="flex items-center gap-1.5 normal-case lg:uppercase">
               <span className="rec-blink h-1.5 w-1.5 rounded-full bg-primary" />
               {site.name} {site.copyright}
             </p>

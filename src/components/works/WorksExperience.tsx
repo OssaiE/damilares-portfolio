@@ -57,8 +57,18 @@ export default function WorksExperience({ view }: { view: WorksView }) {
 
         <main
           id="main"
-          className="relative z-10 min-h-screen pb-24 pt-[150px] md:pt-[200px]"
+          className="relative z-10 min-h-screen pb-24 pt-[104px] md:pt-[200px]"
         >
+          {/* Mobile view switcher — the header slot is hidden below md, so the
+              Grid / List / Zoom control lives in-page on phones. */}
+          <div className="mb-8 px-[var(--gutter)] md:hidden">
+            <WorksViewSwitcher
+              view={view}
+              onChange={setView}
+              showLabel={false}
+            />
+          </div>
+
           {view === "grid" && (
             <div className="px-[var(--gutter)]">
               <ProjectGrid

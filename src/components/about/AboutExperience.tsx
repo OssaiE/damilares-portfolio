@@ -464,41 +464,44 @@ function Fallback() {
           </div>
         </section>
 
-        {/* Chapter 2 — full-bleed horizontal reel (native scroll, no spacing) */}
-        <section className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]">
-          {about.gallery.map((shot, i) => (
-            <figure
-              key={i}
-              className="relative h-[100svh] w-screen shrink-0 snap-center overflow-hidden bg-ink"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={shot.src}
-                alt={`${shot.action} — ${shot.role}`}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-              {i === 0 ? (
-                <figcaption className="absolute inset-x-0 bottom-0 p-[var(--gutter)] pb-14">
-                  <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85">
-                    Chapter Two
-                  </p>
-                  <h2 className="mt-2 max-w-[12ch] font-sans text-[clamp(2rem,10vw,3.25rem)] font-bold leading-[0.98] tracking-[-0.02em] text-primary [text-shadow:0_2px_28px_rgba(0,0,0,0.6)]">
-                    {about.chapterTwo}
-                  </h2>
-                </figcaption>
-              ) : (
-                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-[var(--gutter)] pb-10">
-                  <p className="font-sans text-xl font-normal text-primary/80">
+        {/* Chapter 2 — horizontal photo reel. `touch-pan-x` decouples the axes
+            so a horizontal swipe scrolls the reel while vertical swipes still
+            scroll the page (a full-height reel otherwise traps mobile scroll).
+            Frames are a shorter strip with neighbours peeking, so it clearly
+            reads as swipeable and never captures the page's vertical scroll. */}
+        <section className="py-14">
+          <div className="mb-6 px-[var(--gutter)]">
+            <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85">
+              Chapter Two
+            </p>
+            <h2 className="mt-2 font-sans text-[clamp(2rem,10vw,3.25rem)] font-bold leading-[0.98] tracking-[-0.02em] text-primary">
+              {about.chapterTwo}
+            </h2>
+          </div>
+          <div className="flex touch-pan-x snap-x snap-mandatory gap-3 overflow-x-auto px-[var(--gutter)] pb-4 [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
+            {about.gallery.map((shot, i) => (
+              <figure
+                key={i}
+                className="relative h-[58vh] w-[80vw] shrink-0 snap-center overflow-hidden bg-ink"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={shot.src}
+                  alt={`${shot.action} — ${shot.role}`}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-4">
+                  <p className="font-sans text-base font-normal text-primary/80">
                     {shot.action}
                   </p>
-                  <p className="mt-0.5 font-sans text-2xl font-semibold text-primary">
+                  <p className="mt-0.5 font-sans text-xl font-semibold text-primary">
                     {shot.role}
                   </p>
                 </figcaption>
-              )}
-            </figure>
-          ))}
+              </figure>
+            ))}
+          </div>
         </section>
 
         <Footer />

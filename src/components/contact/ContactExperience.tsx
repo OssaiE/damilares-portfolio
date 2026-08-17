@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { site, socials } from "@/lib/site";
 
 /* ------------------------------------------------------------------ *
- * Contact — a "camera lens" reveal.
+ * Contact — a "camera lens" reveal (desktop only).
  *
  *   Layer 0 · three photographs slowly cross-fading behind everything.
  *   Layer 1 · the black + faint-grid backdrop laid OVER them, masked by a soft
@@ -15,8 +15,9 @@ import { site, socials } from "@/lib/site";
  *   Content · `mix-blend-mode: difference`, negative type that reacts to the
  *     photo showing through.
  *
- * Aperture follow runs off one rAF (no re-renders). Reduced-motion gets a
- * gentle static reveal.
+ * The lens is a fine-pointer, large-screen conceit — it can't follow a finger,
+ * so phones and tablets get a clean static layout instead (no aperture, cursor,
+ * photos or blend). Reduced-motion parks the aperture at centre.
  * ------------------------------------------------------------------ */
 
 const IMAGES = [
@@ -32,6 +33,9 @@ const LENSES = [
   { label: "135mm", radius: 175 },
 ] as const;
 
+const GRID_IMAGE =
+  "linear-gradient(90deg, #fff 1px, transparent 1px), linear-gradient(#fff 1px, transparent 1px)";
+
 const linkClass =
   "font-sans text-lg text-paper underline-offset-4 transition-colors duration-300 hover:text-primary hover:underline focus-visible:text-primary md:text-xl";
 
@@ -39,15 +43,26 @@ export default function ContactExperience() {
   const instagram = socials.find((s) => s.label === "Instagram");
   const linkedin = socials.find((s) => s.label === "LinkedIn");
 
-  // Slow cross-fade between the three photographs.
+  // The lens experience is desktop + fine-pointer only.
+  const [lensOn, setLensOn] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px) and (pointer: fine)");
+    const update = () => setLensOn(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Slow cross-fade between the three photographs (desktop lens only).
   const [idx, setIdx] = useState(0);
   useEffect(() => {
+    if (!lensOn) return;
     const id = window.setInterval(
       () => setIdx((i) => (i + 1) % IMAGES.length),
       4200,
     );
     return () => window.clearInterval(id);
-  }, []);
+  }, [lensOn]);
 
   // Lens (aperture size). Click cycles it; a ref feeds the rAF loop.
   const [lens, setLens] = useState(1); // start on 50mm
@@ -65,6 +80,7 @@ export default function ContactExperience() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (!lensOn) return;
     const overlay = overlayRef.current;
     const ring = ringRef.current;
     if (!overlay) return;
@@ -110,11 +126,92 @@ export default function ContactExperience() {
       window.removeEventListener("pointermove", onMove);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lensOn]);
 
   const mask =
     "radial-gradient(circle var(--r, 260px) at var(--mx, 50%) var(--my, 50%), transparent 0%, transparent 58%, #fff 92%)";
 
+  /* Shared content (heading + contact details) */
+  const content = (
+    <div className="grid w-full grid-cols-1 gap-12 md:grid-cols-2 md:items-center md:gap-16">
+      <h1 className="font-display text-[clamp(2.5rem,7vw,6.5rem)] font-bold leading-[1.05] tracking-[-0.02em] text-paper md:leading-[0.92]">
+        Let&apos;s work
+        <br />
+        together.
+      </h1>
+
+      <div className="max-w-md">
+        <p className="font-sans text-base leading-relaxed text-paper md:text-lg">
+          Have a project in mind or want to collaborate? Get in touch below.
+        </p>
+
+        <dl className="mt-10 space-y-8">
+          <div>
+            <dt className="u-label text-paper/70">Email</dt>
+            <dd className="mt-1.5">
+              <a href={`mailto:${site.email}`} className={linkClass}>
+                {site.email}
+              </a>
+            </dd>
+          </div>
+
+          <div>
+            <dt className="u-label text-paper/70">Instagram</dt>
+            <dd className="mt-1.5">
+              <a
+                href={instagram?.href ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
+              >
+                Instagram profile
+              </a>
+            </dd>
+          </div>
+
+          <div>
+            <dt className="u-label text-paper/70">LinkedIn</dt>
+            <dd className="mt-1.5">
+              <a
+                href={linkedin?.href ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
+              >
+                LinkedIn profile
+              </a>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  );
+
+  /* Phones & tablets — clean static layout, no lens. */
+  if (!lensOn) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-ink">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            opacity: 0.03,
+            backgroundImage: GRID_IMAGE,
+            backgroundSize: "275px 175px",
+          }}
+        />
+        <div className="grain pointer-events-none absolute inset-0 opacity-[0.05]" />
+        <main
+          id="main"
+          className="relative z-10 flex min-h-screen items-center px-[var(--gutter)] pb-24 pt-[150px] md:pt-[200px]"
+        >
+          {content}
+        </main>
+      </div>
+    );
+  }
+
+  /* Desktop — the camera-lens reveal. */
   return (
     <div
       className="relative min-h-screen cursor-none overflow-hidden bg-ink"
@@ -140,7 +237,7 @@ export default function ContactExperience() {
             style={{ opacity: i === idx ? 1 : 0 }}
           />
         ))}
-        <div className="absolute inset-0 bg-ink/50 md:bg-ink/25" />
+        <div className="absolute inset-0 bg-ink/25" />
       </div>
 
       {/* Layer 1 — black + faint grid backdrop, opened up by the aperture */}
@@ -154,8 +251,7 @@ export default function ContactExperience() {
           className="pointer-events-none absolute inset-0"
           style={{
             opacity: 0.03,
-            backgroundImage:
-              "linear-gradient(90deg, #fff 1px, transparent 1px), linear-gradient(#fff 1px, transparent 1px)",
+            backgroundImage: GRID_IMAGE,
             backgroundSize: "275px 175px",
           }}
         />
@@ -167,58 +263,7 @@ export default function ContactExperience() {
         id="main"
         className="relative z-10 flex min-h-screen items-center px-[var(--gutter)] pb-24 pt-[150px] mix-blend-difference md:pt-[200px]"
       >
-        <div className="grid w-full grid-cols-1 gap-12 md:grid-cols-2 md:items-center md:gap-16">
-          <h1 className="font-display text-[clamp(2.5rem,7vw,6.5rem)] font-bold leading-[1.05] tracking-[-0.02em] text-paper md:leading-[0.92]">
-            Let&apos;s work
-            <br />
-            together.
-          </h1>
-
-          <div className="max-w-md">
-            <p className="font-sans text-base leading-relaxed text-paper md:text-lg">
-              Have a project in mind or want to collaborate? Get in touch below.
-            </p>
-
-            <dl className="mt-10 space-y-8">
-              <div>
-                <dt className="u-label text-paper/70">Email</dt>
-                <dd className="mt-1.5">
-                  <a href={`mailto:${site.email}`} className={linkClass}>
-                    {site.email}
-                  </a>
-                </dd>
-              </div>
-
-              <div>
-                <dt className="u-label text-paper/70">Instagram</dt>
-                <dd className="mt-1.5">
-                  <a
-                    href={instagram?.href ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={linkClass}
-                  >
-                    Instagram profile
-                  </a>
-                </dd>
-              </div>
-
-              <div>
-                <dt className="u-label text-paper/70">LinkedIn</dt>
-                <dd className="mt-1.5">
-                  <a
-                    href={linkedin?.href ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={linkClass}
-                  >
-                    LinkedIn profile
-                  </a>
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </div>
+        {content}
       </main>
 
       {/* Lens UI — viewfinder ring + focus ticks + focal-length readout */}

@@ -72,11 +72,13 @@
   --text-9xl--line-height: 1;
 
   /* Global gutter used by the layout grid + framing guides */
-  --gutter: 1.5rem;
+  --gutter: 1rem; /* 16px on mobile */
 }
 
+/* Wider gutter from tablet up. Declared on :root (NOT @theme) — Tailwind v4
+   hoists @theme blocks out of @media, which made 2.5rem apply on mobile too. */
 @media (min-width: 768px) {
-  @theme {
+  :root {
     --gutter: 2.5rem;
   }
 }

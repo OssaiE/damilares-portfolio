@@ -19,6 +19,18 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  // Mobile bar shows the current-page label on the right (in place of the logo).
+  const mobileLabel =
+    pathname === "/"
+      ? "Homepage."
+      : pathname.startsWith("/works")
+        ? "Works."
+        : pathname.startsWith("/about")
+          ? "About."
+          : pathname.startsWith("/contact")
+            ? "Contact."
+            : "AreyouDami.";
+
   const close = useCallback(() => {
     setOpen((wasOpen) => {
       if (wasOpen) playClap(); // clap only on the shut ("Action!")
@@ -69,7 +81,7 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative w-[290px] max-w-[calc(100vw-3rem)]">
+        <div className="relative w-[calc(100vw_-_var(--gutter)*2)] md:w-[290px]">
           {/* Drawer (behind the bar) */}
           <AnimatePresence>
             {open && (
@@ -171,11 +183,17 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
               <ClapperMenuIcon open={open} />
             </button>
 
+            {/* Mobile: current-page label (black on the yellow bar) */}
+            <span className="pr-1 font-sans text-[16px] font-medium text-ink md:hidden">
+              {mobileLabel}
+            </span>
+
+            {/* Desktop: the AreyouDami. logo */}
             <Link
               href="/"
               onClick={close}
               aria-label="AreyouDami. home"
-              className="flex items-center pr-1 transition-opacity duration-300 hover:opacity-70"
+              className="hidden items-center pr-1 transition-opacity duration-300 hover:opacity-70 md:flex"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -193,7 +211,7 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
       {/* Top-right slot: page view switcher, or the default Homepage indicator.
           Hidden while the menu is open. */}
       <motion.div
-        className="fixed right-[var(--gutter)] top-5 z-50 hidden sm:block md:top-6"
+        className="fixed right-[var(--gutter)] top-5 z-50 hidden md:block md:top-6"
         animate={{ opacity: open ? 0 : 1, y: open ? -6 : 0 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         aria-hidden={open}

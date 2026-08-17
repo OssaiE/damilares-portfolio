@@ -272,7 +272,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
             </motion.span>
 
             {/* Title — Inter 96px / extrabold / 90% lh / -2px tracking / max 2 lines */}
-            <h2 className="mt-2 max-w-[40rem] font-sans text-[3.25rem] font-extrabold leading-[0.9] tracking-[-2px] text-primary md:text-8xl">
+            <h2 className="mt-2 max-w-[clamp(260px,34vw,600px)] font-sans text-[40px] font-extrabold leading-none tracking-[-2px] text-primary md:text-8xl">
               <span className="block overflow-hidden pb-[0.1em]">
                 <motion.span
                   className="block"
@@ -280,7 +280,13 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
                   animate={active ? { y: "0%" } : { y: "110%" }}
                   transition={{ duration: 0.8, ease: easeSmooth }}
                 >
-                  {work.title}
+                  {/* Drop the em-dash separator — show the name and its
+                      subtitle on their own lines instead. */}
+                  {work.title.split(/\s*—\s*/).map((part, i) => (
+                    <span key={i} className="block">
+                      {part}
+                    </span>
+                  ))}
                 </motion.span>
               </span>
             </h2>

@@ -87,6 +87,7 @@ export default function ProjectZoom({
 
   const imgRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const captionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -106,7 +107,8 @@ export default function ProjectZoom({
   }, []);
 
   useEffect(() => {
-    if (!desktop) return; // mobile: plain stacked list, no reel
+    // Runs on both desktop (full 3D depth reel) and mobile (flattened focus
+    // reel). Reduced-motion falls back to the desaturate-only look inside.
     let raf = 0;
     let smooth = window.scrollY;
     const N = projects.length;
@@ -153,20 +155,47 @@ export default function ProjectZoom({
           continue;
         }
 
-        const { z, s, o } = styleFor(delta, depth);
-        img.style.transform = `translate3d(0,0,${z.toFixed(1)}px) scale(${s.toFixed(4)})`;
-        img.style.opacity = o.toFixed(3);
-        img.style.visibility = o > 0.01 ? "visible" : "hidden";
-        img.style.willChange =
-          Math.abs(delta) < 1.6 ? "transform, opacity, filter" : "auto";
         // Desaturate away from centre, resolve to full colour when active.
         const g = smoothstep(near);
-        img.style.filter =
-          g > 0.999
-            ? "none"
-            : `grayscale(${((1 - g) * 0.85).toFixed(3)}) brightness(${lerp(0.82, 1, g).toFixed(3)})`;
-        // Only the centred frame is a live click target.
-        if (cell) cell.style.pointerEvents = o > 0.5 ? "auto" : "none";
+
+        if (desktop) {
+          const { z, s, o } = styleFor(delta, depth);
+          img.style.transform = `translate3d(0,0,${z.toFixed(1)}px) scale(${s.toFixed(4)})`;
+          img.style.opacity = o.toFixed(3);
+          img.style.visibility = o > 0.01 ? "visible" : "hidden";
+          img.style.willChange =
+            Math.abs(delta) < 1.6 ? "transform, opacity, filter" : "auto";
+          img.style.filter =
+            g > 0.999
+              ? "none"
+              : `grayscale(${((1 - g) * 0.85).toFixed(3)}) brightness(${lerp(0.82, 1, g).toFixed(3)})`;
+          // Only the centred frame is a live click target.
+          if (cell) cell.style.pointerEvents = o > 0.5 ? "auto" : "none";
+        } else {
+          // Mobile: flattened focus reel — the centred project scales to full
+          // size + colour, neighbours shrink, dim and desaturate. 2D only (no
+          // translateZ) so it stays light on phones and never hijacks scroll.
+          const s = lerp(0.9, 1, g);
+          const o = lerp(0.45, 1, g);
+          img.style.transform = `scale(${s.toFixed(4)})`;
+          img.style.opacity = o.toFixed(3);
+          img.style.visibility = "visible";
+          img.style.willChange =
+            Math.abs(delta) < 1.6 ? "transform, opacity, filter" : "auto";
+          img.style.filter =
+            g > 0.999
+              ? "none"
+              : `grayscale(${((1 - g) * 0.9).toFixed(3)}) brightness(${lerp(0.8, 1, g).toFixed(3)})`;
+          if (cell) cell.style.pointerEvents = "auto";
+          // Caption tracks focus too — bright + settled on the active frame,
+          // dim + nudged down on the ones drifting out (echoes the desktop
+          // metadata layer).
+          const caption = captionRefs.current[i];
+          if (caption) {
+            caption.style.opacity = lerp(0.3, 1, g).toFixed(3);
+            caption.style.transform = `translateY(${lerp(6, 0, g).toFixed(1)}px)`;
+          }
+        }
       }
 
       if (bestId && bestId !== activeRef.current) {
@@ -195,6 +224,11 @@ export default function ProjectZoom({
       });
       cellRefs.current.forEach((c) => {
         if (c) c.style.pointerEvents = "";
+      });
+      captionRefs.current.forEach((c) => {
+        if (!c) return;
+        c.style.opacity = "";
+        c.style.transform = "";
       });
       if (overlayRef.current) overlayRef.current.style.opacity = "";
     };
@@ -229,6 +263,9 @@ export default function ProjectZoom({
             }}
             registerCell={(el) => {
               cellRefs.current[i] = el;
+            }}
+            registerCaption={(el) => {
+              captionRefs.current[i] = el;
             }}
           />
         ))}
@@ -274,12 +311,14 @@ function ZoomMedia({
   canHover,
   registerImg,
   registerCell,
+  registerCaption,
 }: {
   project: Project;
   shape: { w: string; ar: string };
   canHover: boolean;
   registerImg: (el: HTMLDivElement | null) => void;
   registerCell: (el: HTMLDivElement | null) => void;
+  registerCaption: (el: HTMLDivElement | null) => void;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -303,7 +342,7 @@ function ZoomMedia({
   };
 
   return (
-    <li className="flex min-h-[60vh] items-center justify-center">
+    <li className="flex items-center justify-center py-5 md:min-h-[60vh] md:py-0">
       <div
         ref={registerCell}
         className="zoom-media relative w-full max-w-[900px] md:w-[var(--w)]"
@@ -361,7 +400,7 @@ function ZoomMedia({
         </Link>
 
         {/* Mobile metadata (no fixed side layer on small screens) */}
-        <div className="mt-3 md:hidden">
+        <div ref={registerCaption} className="mt-3 md:hidden">
           <h3 className="font-sans text-base font-medium text-paper">
             {project.title}
           </h3>

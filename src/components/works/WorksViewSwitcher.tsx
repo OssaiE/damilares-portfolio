@@ -15,15 +15,20 @@ export const WORKS_VIEWS: { id: WorksView; label: string }[] = [
 export default function WorksViewSwitcher({
   view,
   onChange,
+  showLabel = true,
 }: {
   view: WorksView;
   onChange: (v: WorksView) => void;
+  /** The "Works." lead-in — shown in the header, hidden for the in-page control. */
+  showLabel?: boolean;
 }) {
   return (
     <div className="flex h-14 items-center gap-4">
-      <span className="font-sans text-base font-medium text-primary">
-        Works.
-      </span>
+      {showLabel && (
+        <span className="font-sans text-base font-medium text-primary">
+          Works.
+        </span>
+      )}
       <div
         role="group"
         aria-label="Choose a view"
