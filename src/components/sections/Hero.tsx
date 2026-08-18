@@ -113,14 +113,14 @@ export default function Hero() {
         <div className="grain pointer-events-none absolute inset-0 opacity-[0.05]" />
         <FramingGuides />
 
-        {/* Content — copy stacked over the lens buttons (top + bottom at every
-            breakpoint, like mobile), sitting just above the wordmark via a
-            bottom-anchored flex column. */}
+        {/* Content — copy stacked over the lens buttons (top + bottom) on
+            mobile and tablet; only desktop (lg+) splits them left/right in a
+            row. Sits just above the wordmark via a bottom-anchored flex column. */}
         <div className="absolute inset-x-[var(--gutter)] bottom-[1.4vh] flex flex-col">
           {/* Copy + lenses start low (over where the wordmark will sit) and get
               lifted to their resting spot as the wordmark blurs in below. */}
           <motion.div
-            className="flex flex-col items-start gap-6 md:gap-8"
+            className="flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-8"
             animate={{ y: step >= 3 ? 0 : "17vw" }}
             transition={{ duration: 1.05, ease: easeExpo }}
           >
@@ -172,7 +172,7 @@ export default function Hero() {
               top, so a vw-based negative margin pulls the copy onto them and
               overlaps by ~12px. It drives its own blur-in via `reveal` so the
               wordmark actually blurs up (not a hard pop) as the copy lifts. */}
-          <div className="pointer-events-none mt-8 md:-mt-[4vw]">
+          <div className="pointer-events-none mt-8 md:-mt-[4vw] lg:-mt-[5.4vw]">
             <MaskedWordmark reveal={step >= 3} />
           </div>
         </div>
