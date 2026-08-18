@@ -271,8 +271,11 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
               {work.category}
             </motion.span>
 
-            {/* Title — Inter 96px / extrabold / 90% lh / -2px tracking / max 2 lines */}
-            <h2 className="mt-2 max-w-[clamp(260px,34vw,600px)] font-sans text-[40px] font-extrabold leading-none tracking-[-2px] text-primary md:text-8xl">
+            {/* Title — Inter 96px / extrabold / 90% lh / -2px tracking. On web
+                the title may run wider than the progress bar — up to 60% of the
+                screen — so the name and subtitle sit on their own lines; mobile
+                still wraps within the bar-matched width. */}
+            <h2 className="mt-2 max-w-[clamp(260px,34vw,600px)] font-sans text-[40px] font-extrabold leading-none tracking-[-2px] text-primary md:max-w-[60vw] md:text-8xl">
               <span className="block overflow-hidden pb-[0.1em]">
                 <motion.span
                   className="block"
