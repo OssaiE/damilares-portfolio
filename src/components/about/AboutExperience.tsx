@@ -423,52 +423,69 @@ function Fallback() {
       <div className="grain pointer-events-none absolute inset-0 opacity-[0.05]" />
 
       <main id="main" className="relative z-10">
-        {/* Portrait + wordmark */}
-        <section className="relative flex min-h-[86vh] items-center justify-center overflow-hidden px-[var(--gutter)] pt-[140px]">
-          <OutlinedWordmark className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center" />
-          <div
-            className="relative w-full max-w-[380px]"
-            style={{ aspectRatio: "3 / 4" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={about.portrait}
-              alt={`${site.creator}, ${site.role}`}
-              className="h-full w-full object-cover"
-            />
-            <div className="vignette pointer-events-none absolute inset-0" />
+        {/* Chapter 1 — the portrait pins while the story rolls up over it,
+            mirroring the desktop credits roll. The sticky stage stays put for
+            the height of the narrative; the narrative is pulled back over it
+            with a negative margin, and a gradient scrim keeps the copy legible
+            as it passes over the image. */}
+        <section className="relative">
+          {/* Sticky portrait stage — pinned behind the scrolling story */}
+          <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-[var(--gutter)]">
+            <OutlinedWordmark className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center" />
+            <div
+              className="relative w-full max-w-[380px]"
+              style={{ aspectRatio: "3 / 4" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={about.portrait}
+                alt={`${site.creator}, ${site.role}`}
+                className="h-full w-full object-cover"
+              />
+              <div className="vignette pointer-events-none absolute inset-0" />
+            </div>
+          </div>
+
+          {/* Narrative — rolls up over the pinned portrait (native scroll) */}
+          <div className="relative -mt-[100svh]">
+            {/* Reveal the portrait first before the copy arrives */}
+            <div className="h-[82svh]" aria-hidden />
+            <div className="relative px-[var(--gutter)] pb-[14vh]">
+              {/* Gradient scrim: clear over the portrait, deepening to ink as the
+                  copy scrolls up so it reads over the image */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 -top-[35svh] bottom-0 bg-gradient-to-b from-transparent via-ink/80 to-ink"
+              />
+              <div className="relative mx-auto max-w-[36rem] text-center">
+                <h1 className="font-sans text-[clamp(2.5rem,12vw,4rem)] font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_28px_rgba(0,0,0,0.65)]">
+                  {about.chapterOne}
+                </h1>
+                <div className="mt-8 space-y-6 text-center">
+                  {about.bio.map((para, i) => {
+                    const last = i === about.bio.length - 1;
+                    return (
+                      <p
+                        key={i}
+                        className={`font-sans leading-relaxed [text-shadow:0_2px_24px_rgba(0,0,0,0.75)] ${
+                          last
+                            ? "text-lg font-medium italic text-primary [font-family:'Courier_New',ui-monospace,monospace]"
+                            : "text-base text-primary/90"
+                        }`}
+                      >
+                        {para}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Chapter 1 — narrative */}
-        <section className="mx-auto max-w-[36rem] px-[var(--gutter)] py-16 text-center">
-          <h1 className="font-sans text-[clamp(2.5rem,12vw,4rem)] font-extrabold leading-[0.9] tracking-[-0.02em] text-primary">
-            {about.chapterOne}
-          </h1>
-          <div className="mt-8 space-y-6 text-left">
-            {about.bio.map((para, i) => {
-              const last = i === about.bio.length - 1;
-              return (
-                <p
-                  key={i}
-                  className={`font-sans leading-relaxed ${
-                    last
-                      ? "text-lg font-medium italic text-primary [font-family:'Courier_New',ui-monospace,monospace]"
-                      : "text-base text-primary/90"
-                  }`}
-                >
-                  {para}
-                </p>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Chapter 2 — horizontal photo reel. `touch-pan-x` decouples the axes
-            so a horizontal swipe scrolls the reel while vertical swipes still
-            scroll the page (a full-height reel otherwise traps mobile scroll).
-            Frames are a shorter strip with neighbours peeking, so it clearly
-            reads as swipeable and never captures the page's vertical scroll. */}
+        {/* Chapter 2 — vertical photo stack. Frames run full-width down the
+            page at their natural aspect ratio, so the reel reads as a normal
+            vertical scroll on mobile (no sideways swipe). */}
         <section className="py-14">
           <div className="mb-6 px-[var(--gutter)]">
             <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85">
@@ -478,11 +495,12 @@ function Fallback() {
               {about.chapterTwo}
             </h2>
           </div>
-          <div className="flex touch-pan-x snap-x snap-mandatory gap-3 overflow-x-auto px-[var(--gutter)] pb-4 [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
+          <div className="flex flex-col">
             {about.gallery.map((shot, i) => (
               <figure
                 key={i}
-                className="relative h-[58vh] w-[80vw] shrink-0 snap-center overflow-hidden bg-ink"
+                style={{ aspectRatio: shot.aspect }}
+                className="relative w-full overflow-hidden bg-ink"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

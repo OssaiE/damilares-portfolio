@@ -30,21 +30,20 @@ export default function IntroSequence() {
   const { reveal } = useIntro();
   const [stage, setStage] = useState<Stage>("count");
   const [n, setN] = useState(3);
+  // Touch devices (phones/tablets) still play the intro, but in a "lite" mode
+  // that drops the animated backdrop-filter blur focus-hunt — that blur
+  // compositing is what can lock up mobile Safari on a single frame. The
+  // countdown, camera viewfinder and iris reveal all still run.
+  const [lite, setLite] = useState(false);
 
   useEffect(() => {
-    // Skip the cinematic intro on touch devices (phones/tablets) and under
-    // reduced-motion — reveal the site immediately. The intro's animated
-    // mask-image + backdrop-filter blur compositing is very heavy on mobile
-    // Safari and can lock the page up (freezing on a single frame), which then
-    // makes the whole site feel dead behind the overlay.
-    const skip =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      window.matchMedia("(pointer: coarse)").matches;
-    if (skip) {
+    // Only reduced-motion skips the cinematic intro entirely.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       reveal();
       setStage("gone");
       return;
     }
+    setLite(window.matchMedia("(pointer: coarse)").matches);
     const t: number[] = [];
     t.push(window.setTimeout(() => setN(2), 850));
     t.push(window.setTimeout(() => setN(1), 1700));
@@ -96,8 +95,10 @@ export default function IntroSequence() {
       />
 
       {/* Camera focus-hunt: blurs the opening circle, nudges toward sharp,
-          drifts back, then locks — how a lens pulls focus before recording. */}
-      {revealing && (
+          drifts back, then locks — how a lens pulls focus before recording.
+          Skipped in lite (touch) mode — the animated backdrop-filter blur is
+          the layer that can freeze mobile Safari. */}
+      {revealing && !lite && (
         <motion.div
           className="absolute inset-0"
           initial={{ backdropFilter: "blur(24px)" }}
@@ -133,7 +134,10 @@ export default function IntroSequence() {
         {/* Film noise across the whole leader. */}
         <div className="grain pointer-events-none absolute inset-0 opacity-[0.12] mix-blend-screen" />
 
-        {stage === "camera" ? <CameraGrid /> : <Countdown n={n} />}
+        {/* Countdown only during the count; the camera grid holds through the
+            reveal so "Action" fades out with the overlay (otherwise the ternary
+            falls back to the countdown and flashes the last digit, "1"). */}
+        {stage === "count" ? <Countdown n={n} /> : <CameraGrid />}
       </motion.div>
 
       {/* Recording frame — persists through the reveal (does NOT fade with the
