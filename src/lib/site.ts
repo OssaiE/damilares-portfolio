@@ -379,29 +379,114 @@ export type Work = {
   /** Where in the source video the 5s preview window begins. */
   clipStart?: number;
   poster?: string;
-  video?: { mp4: string; webm?: string };
+  video?: { mp4?: string; webm?: string };
+  /** Optional hand-set line breaks for the reel title (each entry is one line). */
+  titleLines?: string[];
 };
 
 /**
  * Selected works — the FIRST 8 of the catalogue, scrolling through the works
  * section one project at a time (fela.tv-style), side indicator 1 → 8.
  *
- * NOTE: real preview clips weren't provided (the catalogue links to YouTube),
- * so the two ship-ready source clips (palmwine + showreel-bg) are reused here
- * as PLACEHOLDER previews — each panel loops a different 5-second window
- * (`clipStart`). Swap `video`/`poster` per project as final footage is delivered.
+ * Real delivered clips live in REAL_PREVIEWS (keyed by project slug); each is a
+ * WebM + MP4 (iOS Safari) pair. Projects without final footage yet fall back to
+ * the two ship-ready placeholder sources (palmwine + showreel-bg), each looping a
+ * different 5-second window via FW_CLIP_START.
  */
-const FW_CLIP_START = [0, 6, 10, 8, 5, 4, 14, 12] as const;
+const FW_CLIP_START = [2, 6, 10, 8, 5, 4, 14, 12] as const;
 
-export const featuredWorks: Work[] = PROJECT_DATA.slice(0, 8).map((p, i) => ({
-  title: p.title,
-  category: p.category,
-  year: p.year,
-  runtime: 5,
-  clipStart: FW_CLIP_START[i],
-  poster: ytThumb(p.youtubeUrl),
-  video:
-    i % 2 === 0
-      ? { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" }
-      : { mp4: "/videos/showreel-bg.mp4" },
-}));
+const REAL_PREVIEWS: Record<
+  string,
+  { webm: string; mp4: string; clipStart?: number }
+> = {
+  "talking-the-most-prandas": {
+    webm: "/videos/prandas-talking-the-most.webm",
+    mp4: "/videos/prandas-talking-the-most.mp4",
+    clipStart: 1,
+  },
+  "adroh-homes": {
+    webm: "/videos/adron-homes-ojude-oba.webm",
+    mp4: "/videos/adron-homes-ojude-oba.mp4",
+    clipStart: 1,
+  },
+  "american-cola": {
+    webm: "/videos/american-cola.webm",
+    mp4: "/videos/american-cola.mp4",
+    clipStart: 1,
+  },
+  "trace-mental-health-campaign": {
+    webm: "/videos/trace-mental-health-campaign.webm",
+    mp4: "/videos/trace-mental-health-campaign.mp4",
+    clipStart: 1,
+  },
+  "trace-sessions-with-fola": {
+    webm: "/videos/trace-sessions-fola.webm",
+    mp4: "/videos/trace-sessions-fola.mp4",
+    clipStart: 1,
+  },
+  "victoria-orenze-father-we-are-grateful": {
+    webm: "/videos/victoria-orenze-father-we-are-grateful.webm",
+    mp4: "/videos/victoria-orenze-father-we-are-grateful.mp4",
+    clipStart: 1,
+  },
+  "palmwine-fest-the-making": {
+    webm: "/videos/palmwine-fest-the-making.webm",
+    mp4: "/videos/palmwine-fest-the-making.mp4",
+    clipStart: 1,
+  },
+  "tracelive-with-wande-coal": {
+    webm: "/videos/tracelive-with-wande-coal.webm",
+    mp4: "/videos/tracelive-with-wande-coal.mp4",
+    clipStart: 1,
+  },
+};
+
+/**
+ * Homepage reel lineup (8 slots). Starts from the first 8 of the catalogue, then
+ * swaps placeholder-only slots for projects that now have real footage. Kept as an
+ * explicit title→title map so the reel can be re-curated freely.
+ */
+const FEATURED_SWAPS: Record<string, string> = {
+  "Lord's Achievers Awards — Johnny Drille": "Trace Mental Health Campaign",
+  "Sooyah Bistro": "Trace Sessions with Fola",
+  "TraceLive with Ruger": "Victoria Orenze — Father We Are Grateful",
+  "Lord's Achievers Awards — IB Quake": "TraceLive with Wande Coal",
+};
+
+const FEATURED_SOURCE = PROJECT_DATA.slice(0, 8).map((p) => {
+  const swapTitle = FEATURED_SWAPS[p.title];
+  return (swapTitle && PROJECT_DATA.find((q) => q.title === swapTitle)) || p;
+});
+
+/** Hand-set title line breaks for the reel (keyed by project slug). Also carries
+ *  small display-only text tweaks (e.g. "Adron", "Trace Live", "Documentary"). */
+const FEATURED_TITLE_LINES: Record<string, string[]> = {
+  "talking-the-most-prandas": ["Talking the", "Most - Prandas"],
+  "trace-sessions-with-fola": ["Trace Sessions", "With FOLA"],
+  "victoria-orenze-father-we-are-grateful": [
+    "Victoria Orenze - Father",
+    "We Are Grateful",
+  ],
+  "adroh-homes": ["Adron Homes"],
+  "palmwine-fest-the-making": ["Palmwine Fest", "Documentary"],
+  "tracelive-with-wande-coal": ["Trace Live with", "Wande Coal"],
+  "trace-mental-health-campaign": ["Trace Mental", "Health Campaign"],
+};
+
+export const featuredWorks: Work[] = FEATURED_SOURCE.map((p, i) => {
+  const real = REAL_PREVIEWS[slug(p.title)];
+  return {
+    title: p.title,
+    category: p.category,
+    year: p.year,
+    runtime: 5,
+    clipStart: real?.clipStart ?? FW_CLIP_START[i],
+    poster: ytThumb(p.youtubeUrl),
+    titleLines: FEATURED_TITLE_LINES[slug(p.title)],
+    video: real
+      ? { webm: real.webm, mp4: real.mp4 }
+      : i % 2 === 0
+        ? { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" }
+        : { mp4: "/videos/showreel-bg.mp4" },
+  };
+});
