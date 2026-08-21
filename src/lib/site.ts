@@ -7,7 +7,7 @@ export const site = {
   name: "AreyouDami.",
   creator: "Damilola Olawoyin",
   role: "Creative Director",
-  email: "damilare@gmail.com",
+  email: "damilaredhrey@gmail.com",
   location: "Lagos, NG",
   copyright: "© 2026 - all rights reserved",
 } as const;
