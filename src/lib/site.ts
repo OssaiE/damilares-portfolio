@@ -57,7 +57,10 @@ export const hero = {
 /*  each gallery `src` below — everything else is data-driven.          */
 /* ------------------------------------------------------------------ */
 export type GalleryShot = {
+  /** Image src, or (for a video shot) the poster still shown before it plays. */
   src: string;
+  /** When set, the frame plays this muted looping clip instead of a still. */
+  video?: { webm?: string; mp4?: string };
   /** CSS aspect-ratio for the frame (keeps photos uncropped-ish, varied). */
   aspect: string;
   /** What he's doing in the frame — top hover line (Inter regular 20). */
@@ -69,7 +72,7 @@ export type GalleryShot = {
 export const about = {
   chapterOne: "Based on a True Story.",
   chapterTwo: "The Creative in His Element.",
-  portrait: "/images/hero-poster.jpg", // → /images/about/portrait.jpg
+  portrait: "/images/about/portrait.jpg",
   intro: `${site.creator} — ${site.role}, ${site.location}.`,
   bio: [
     "I'm Damilare Olawoyin, a filmmaker and creative director who lives for moments that move people. For me, storytelling isn't just a craft; it's an instinct. It's the way I see the world. Every frame, every cut, every sound is a chance to pull an audience into an experience they won't forget.",
@@ -79,15 +82,43 @@ export const about = {
     "I'm constantly pushing myself, experimenting with new techniques, blending practical and digital storytelling, and exploring the next evolution of visual language. At the core of everything I make is one mission:",
     "To craft visuals that resonate… stories that breathe… and experiences that stay with you long after the screen goes dark.",
   ] as string[],
+  // Real delivered stills + BTS clips (captions are provisional — tweak freely).
   gallery: [
-    { src: "/images/about/el-1.jpg", aspect: "3 / 4", action: "On Set", role: "Videographer" },
-    { src: "/images/about/el-2.jpg", aspect: "3 / 2", action: "Directing the Crew", role: "Creative Director" },
-    { src: "/images/about/el-3.jpg", aspect: "3 / 4", action: "On Stage", role: "Creative Director" },
-    { src: "/images/about/el-4.jpg", aspect: "3 / 4", action: "Monitoring the Shot", role: "Director" },
-    { src: "/images/about/el-5.jpg", aspect: "4 / 3", action: "In Conversation", role: "Creative Director" },
-    { src: "/images/about/el-6.jpg", aspect: "3 / 4", action: "Spotlight", role: "Director" },
-    { src: "/images/about/el-7.jpg", aspect: "4 / 3", action: "Behind the Lens", role: "Videographer" },
-    { src: "/images/about/el-8.jpg", aspect: "3 / 2", action: "Calling the Shot", role: "Creative Director" },
+    { src: "/images/about/g-spotlight.jpg", aspect: "3 / 4", action: "In the Spotlight", role: "Performer" },
+    {
+      src: "/images/about/about-1.jpg",
+      video: { webm: "/videos/about-1.webm", mp4: "/videos/about-1.mp4" },
+      aspect: "16 / 9",
+      action: "Behind the Scenes",
+      role: "Director",
+    },
+    { src: "/images/about/g-directing.jpg", aspect: "3 / 2", action: "Directing the Show", role: "Director" },
+    {
+      src: "/images/about/about-3.jpg",
+      video: { webm: "/videos/about-3.webm", mp4: "/videos/about-3.mp4" },
+      aspect: "9 / 16",
+      action: "On the Move",
+      role: "Camera Operator",
+    },
+    { src: "/images/about/g-onset.jpg", aspect: "3 / 4", action: "On Set", role: "Creative Director" },
+    {
+      src: "/images/about/about-2.jpg",
+      video: { webm: "/videos/about-2.webm", mp4: "/videos/about-2.mp4" },
+      aspect: "16 / 9",
+      action: "Rolling",
+      role: "Videographer",
+    },
+    { src: "/images/about/g-camera.jpg", aspect: "3 / 4", action: "Behind the Camera", role: "Videographer" },
+    { src: "/images/about/g-studio.jpg", aspect: "3 / 4", action: "In the Studio", role: "Creative Director" },
+    {
+      src: "/images/about/about-4.jpg",
+      video: { webm: "/videos/about-4.webm", mp4: "/videos/about-4.mp4" },
+      aspect: "16 / 9",
+      action: "Calling the Shot",
+      role: "Creative Director",
+    },
+    { src: "/images/about/g-stage.jpg", aspect: "3 / 4", action: "Live Show", role: "Creative Director" },
+    { src: "/images/about/g-mic.jpg", aspect: "3 / 4", action: "On Stage", role: "Performer" },
   ] as GalleryShot[],
 } as const;
 
@@ -456,6 +487,9 @@ const FEATURED_SOURCE = PROJECT_DATA.slice(0, 8).map((p) => {
   const swapTitle = FEATURED_SWAPS[p.title];
   return (swapTitle && PROJECT_DATA.find((q) => q.title === swapTitle)) || p;
 });
+
+// Lead the reel with American Cola; Talking the Most — Prandas moves to slot 5.
+[FEATURED_SOURCE[0], FEATURED_SOURCE[4]] = [FEATURED_SOURCE[4], FEATURED_SOURCE[0]];
 
 /** Hand-set title line breaks for the reel (keyed by project slug). Also carries
  *  small display-only text tweaks (e.g. "Adron", "Trace Live", "Documentary"). */

@@ -40,7 +40,7 @@ export default function ProjectHero({ project }: { project: Project }) {
             className="group inline-flex shrink-0 items-center gap-2 rounded-[3px] bg-primary px-4 py-2.5 text-sm font-semibold text-ink outline-none ring-primary transition-[background-color,color,transform] duration-300 hover:-translate-y-px hover:bg-ink hover:text-primary hover:ring-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
           >
             Watch on YouTube
-            <YouTubeIcon className="h-4 w-4" />
+            <YouTubeIcon className="h-4 w-6" />
           </a>
         )}
       </div>
