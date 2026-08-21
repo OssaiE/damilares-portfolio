@@ -77,20 +77,28 @@ export default function IntroSequence() {
         y: { duration: 3.1, repeat: Infinity, ease: "easeInOut" },
       }}
     >
-      {/* The black itself — a circular aperture cut from the centre that opens
-          on reveal (var(--iris) = the hole's radius). Solid black while closed,
-          so it also masks the countdown / viewfinder. */}
+      {/* The black itself — a solid black leader that also masks the countdown /
+          viewfinder. The circular aperture (var(--iris) = the hole's radius) is
+          applied ONLY during the reveal, so the count + camera phases are an
+          unmasked, guaranteed-opaque black on every engine. (A masked gradient
+          could render partly transparent on mobile Safari/Chrome and leak the
+          page through below the countdown.) --iris is registered via @property
+          so the hole resolves + animates reliably on WebKit. */}
       <motion.div
         className="absolute inset-0 bg-ink"
-        style={{
-          ["--iris" as string]: "0%",
-          WebkitMaskImage:
-            "radial-gradient(circle at 50% 50%, transparent calc(var(--iris) - 7%), #000 var(--iris))",
-          maskImage:
-            "radial-gradient(circle at 50% 50%, transparent calc(var(--iris) - 7%), #000 var(--iris))",
-        }}
+        style={
+          revealing
+            ? {
+                ["--iris" as string]: "0%",
+                WebkitMaskImage:
+                  "radial-gradient(circle at 50% 50%, transparent calc(var(--iris) - 7%), #000 var(--iris))",
+                maskImage:
+                  "radial-gradient(circle at 50% 50%, transparent calc(var(--iris) - 7%), #000 var(--iris))",
+              }
+            : undefined
+        }
         initial={false}
-        animate={{ ["--iris" as string]: revealing ? "120%" : "0%" }}
+        animate={revealing ? { ["--iris" as string]: "120%" } : {}}
         transition={{ duration: 1.15, ease: EASE_INOUT }}
       />
 

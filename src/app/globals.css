@@ -23,6 +23,17 @@
   font-display: swap;
 }
 
+/* Intro iris — the radius of the aperture hole cut into the black leader.
+   Registered (not just a bare custom property) so it resolves and animates
+   inside the mask-image gradient on WebKit: an UNregistered custom property
+   used in a gradient calc() inside a mask renders as partly transparent on
+   mobile Safari/Chrome, which leaked the page through below the countdown. */
+@property --iris {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Design tokens                                                      */
 /* ------------------------------------------------------------------ */

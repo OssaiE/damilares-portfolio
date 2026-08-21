@@ -81,14 +81,20 @@ export default function SectionScroller() {
       raf = requestAnimationFrame(step);
     };
 
+    // The index we're gliding toward. Steps advance from THIS (not the live,
+    // mid-tween scroll position) so a step can never skip ahead just because the
+    // previous glide hasn't landed yet.
+    let targetIndex = nearestIndex();
+
     const goToIndex = (i: number) => {
       const clamped = Math.max(0, Math.min(sections.length - 1, i));
+      targetIndex = clamped;
       const target = sections[clamped];
       if (target) tweenTo(topOf(target));
     };
 
     const step = (dir: number) => {
-      const next = nearestIndex() + dir;
+      const next = targetIndex + dir;
       if (next < 0 || next > sections.length - 1) return;
       goToIndex(next);
     };
@@ -104,34 +110,39 @@ export default function SectionScroller() {
       document.body.style.overflow === "hidden" ||
       (target as HTMLElement | null)?.closest?.("[data-lenis-prevent]") != null;
 
-    // --- Wheel: responsive one-step-per-flick via ACCELERATION detection.
-    // A fresh flick's deltas are RISING (accelerating) → fire a step immediately,
-    // even mid-glide or during the previous flick's inertia. The inertia tail is
-    // FALLING (decelerating) → ignored, so momentum never over-scrolls. A short
-    // debounce keeps a single flick to a single step. No lock to wait on, so
-    // rapid flicks chain straight through sections. ---
-    const GESTURE_IDLE = 150; // ms of silence that ends a gesture (resets samples)
-    const STEP_DEBOUNCE = 110; // min ms between steps (one step per flick)
-    let deltas: number[] = [];
+    // --- Wheel: one step per flick, released when the wheel actually calms.
+    // A step fires on the leading edge of a flick, then locks. It re-arms when
+    // EITHER a real time gap passes (discrete mouse-wheel notches) OR the delta
+    // magnitude drops to ~0 — a trackpad's momentum tail finally dying out.
+    //
+    // Re-arming on magnitude (not just a time gap) is the key: trackpad inertia
+    // keeps emitting events only ~16ms apart for up to a second, so a
+    // time-gap-only reset never releases while momentum trickles and it swallows
+    // the user's next flick ("sometimes it won't scroll"). A single flick's
+    // magnitude only decays to ~0 once, at the very end, so one flick — humps,
+    // inertia and all — is still exactly one step. ---
+    const GESTURE_IDLE = 140; // ms gap that ends a gesture (mouse-wheel notches)
+    const CALM = 4; // |deltaY| at/under which the wheel counts as settled
     let prevTs = 0;
-    let lastStep = 0;
-    const avgOf = (arr: number[], n: number) => {
-      const s = arr.slice(-n);
-      return s.length ? s.reduce((a, b) => a + b, 0) / s.length : 0;
-    };
+    let armed = true;
     const onWheel = (e: WheelEvent) => {
       if (blocked(e.target)) return;
       e.preventDefault();
       const now = performance.now();
-      if (now - prevTs > GESTURE_IDLE) deltas = [];
-      prevTs = now;
       const mag = Math.abs(e.deltaY);
-      deltas.push(mag);
-      if (deltas.length > 80) deltas.shift();
-      if (mag < 4 || now - lastStep < STEP_DEBOUNCE) return;
-      // Fire only while the gesture is accelerating (new input), not decaying.
-      if (avgOf(deltas, 8) < avgOf(deltas, 40)) return;
-      lastStep = now;
+      if (now - prevTs > GESTURE_IDLE) {
+        // A real pause = a new gesture: re-arm and resync to where we are.
+        armed = true;
+        targetIndex = nearestIndex();
+      }
+      prevTs = now;
+      if (mag <= CALM) {
+        // Momentum / gentle scroll has settled — ready for the next flick.
+        armed = true;
+        return;
+      }
+      if (!armed) return; // still inside the current flick and its inertia
+      armed = false;
       step(e.deltaY > 0 ? 1 : -1);
     };
 
