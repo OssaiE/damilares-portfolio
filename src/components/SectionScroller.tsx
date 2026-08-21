@@ -110,28 +110,39 @@ export default function SectionScroller() {
       document.body.style.overflow === "hidden" ||
       (target as HTMLElement | null)?.closest?.("[data-lenis-prevent]") != null;
 
-    // --- Wheel: exactly ONE step per gesture.
-    // A continuous flick + its inertia tail is one gesture — it fires a single
-    // step on the first real input and then stays locked until the wheel goes
-    // quiet (GESTURE_IDLE of near-silence). That silence resets the lock and
-    // resyncs the target to where we actually are, so a *separate* flick still
-    // advances another section — but no single flick (with its non-monotonic
-    // trackpad/inertia humps) can ever skip two. ---
-    const GESTURE_IDLE = 160; // ms of silence that ends a gesture
+    // --- Wheel: one step per flick, released when the wheel actually calms.
+    // A step fires on the leading edge of a flick, then locks. It re-arms when
+    // EITHER a real time gap passes (discrete mouse-wheel notches) OR the delta
+    // magnitude drops to ~0 — a trackpad's momentum tail finally dying out.
+    //
+    // Re-arming on magnitude (not just a time gap) is the key: trackpad inertia
+    // keeps emitting events only ~16ms apart for up to a second, so a
+    // time-gap-only reset never releases while momentum trickles and it swallows
+    // the user's next flick ("sometimes it won't scroll"). A single flick's
+    // magnitude only decays to ~0 once, at the very end, so one flick — humps,
+    // inertia and all — is still exactly one step. ---
+    const GESTURE_IDLE = 140; // ms gap that ends a gesture (mouse-wheel notches)
+    const CALM = 4; // |deltaY| at/under which the wheel counts as settled
     let prevTs = 0;
-    let steppedThisGesture = false;
+    let armed = true;
     const onWheel = (e: WheelEvent) => {
       if (blocked(e.target)) return;
       e.preventDefault();
       const now = performance.now();
+      const mag = Math.abs(e.deltaY);
       if (now - prevTs > GESTURE_IDLE) {
-        // New gesture: unlock and resync to the actual position.
-        steppedThisGesture = false;
+        // A real pause = a new gesture: re-arm and resync to where we are.
+        armed = true;
         targetIndex = nearestIndex();
       }
       prevTs = now;
-      if (steppedThisGesture || Math.abs(e.deltaY) < 4) return;
-      steppedThisGesture = true;
+      if (mag <= CALM) {
+        // Momentum / gentle scroll has settled — ready for the next flick.
+        armed = true;
+        return;
+      }
+      if (!armed) return; // still inside the current flick and its inertia
+      armed = false;
       step(e.deltaY > 0 ? 1 : -1);
     };
 
