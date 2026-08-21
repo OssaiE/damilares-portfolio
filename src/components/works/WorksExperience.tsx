@@ -40,7 +40,7 @@ export default function WorksExperience({ view }: { view: WorksView }) {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-ink"
+        className="sr-only"
       >
         Skip to content
       </a>

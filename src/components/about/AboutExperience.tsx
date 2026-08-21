@@ -86,6 +86,56 @@ function OutlinedWordmark({ className = "" }: { className?: string }) {
   );
 }
 
+/** A gallery frame's media: a muted looping clip (played only while on screen)
+ *  when the shot has `video`, otherwise a still. */
+function GalleryMedia({ shot }: { shot: GalleryShot }) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Only decode/play while the frame is on screen (keeps several clips light).
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) v.play().catch(() => {});
+        else v.pause();
+      },
+      { threshold: 0.2 },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+
+  if (shot.video) {
+    return (
+      <video
+        ref={ref}
+        className="h-full w-full object-cover"
+        poster={shot.src}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        draggable={false}
+      >
+        {shot.video.webm && <source src={shot.video.webm} type="video/webm" />}
+        {shot.video.mp4 && <source src={shot.video.mp4} type="video/mp4" />}
+      </video>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={shot.src}
+      alt={`${shot.action} — ${shot.role}`}
+      loading="lazy"
+      draggable={false}
+      className="h-full w-full object-cover"
+    />
+  );
+}
+
 function GalleryFrame({ shot }: { shot: GalleryShot }) {
   return (
     <figure
@@ -93,14 +143,7 @@ function GalleryFrame({ shot }: { shot: GalleryShot }) {
       style={{ aspectRatio: shot.aspect }}
       className="group relative h-full shrink-0 overflow-hidden bg-ink outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={shot.src}
-        alt={`${shot.action} — ${shot.role}`}
-        loading="lazy"
-        draggable={false}
-        className="h-full w-full object-cover"
-      />
+      <GalleryMedia shot={shot} />
 
       {/* Black overlay + caption — fade in centred on hover / focus only.
           Top: what he's doing (Inter regular 20). Below: role (Inter semibold 24). */}
@@ -502,13 +545,7 @@ function Fallback() {
                 style={{ aspectRatio: shot.aspect }}
                 className="relative w-full overflow-hidden bg-ink"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={shot.src}
-                  alt={`${shot.action} — ${shot.role}`}
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
+                <GalleryMedia shot={shot} />
                 <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-4">
                   <p className="font-sans text-base font-normal text-primary/80">
                     {shot.action}

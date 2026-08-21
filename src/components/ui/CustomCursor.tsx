@@ -2,19 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring } from "motion/react";
+import { playClap } from "@/lib/clap";
 
-type Mode = "default" | "hover" | "lens";
+type Mode = "default" | "hover";
 
 /**
- * Desktop cursor. A soft trailing ring by default, growing over interactive
- * elements, and morphing into a camera-lens reticle (with a "SHOWREEL" hint)
- * over the hero, signalling that a click plays the reel. Disabled for touch +
- * reduced-motion (native cursor left intact).
+ * Desktop cursor as a camera framing system:
+ *   idle   → a small focus box (four corner brackets + centre dot), à la the
+ *            framing guides.
+ *   hover  → "rack focus": the brackets pull inward and the centre locks to a
+ *            ring, like an AF box snapping onto a subject.
+ *   click  → "clap snap": the box collapses and rebounds with the clapperboard
+ *            clap ("Action!").
+ * Disabled for touch + reduced-motion (native cursor left intact).
  */
 export default function CustomCursor() {
   const [enabled, setEnabled] = useState(false);
   const [mode, setMode] = useState<Mode>("default");
   const [visible, setVisible] = useState(false);
+  const [clicking, setClicking] = useState(false);
 
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
@@ -36,17 +42,23 @@ export default function CustomCursor() {
       const interactive = el?.closest(
         'a, button, [role="slider"], [role="button"], input, textarea, [data-cursor="hover"]',
       );
-      const lensZone = el?.closest('[data-cursor="lens"]');
-      setMode(interactive ? "hover" : lensZone ? "lens" : "default");
+      setMode(interactive ? "hover" : "default");
     };
     const leave = () => setVisible(false);
+    const down = (e: PointerEvent) => {
+      setClicking(true);
+      if (e.button === 0) playClap(0.08); // the clapper snap — "Action!"
+    };
+    const up = () => setClicking(false);
 
     window.addEventListener("pointermove", move, { passive: true });
-    window.addEventListener("pointerdown", move, { passive: true });
+    window.addEventListener("pointerdown", down, { passive: true });
+    window.addEventListener("pointerup", up, { passive: true });
     document.addEventListener("mouseleave", leave);
     return () => {
       window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerdown", move);
+      window.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointerup", up);
       document.removeEventListener("mouseleave", leave);
       document.documentElement.classList.remove("custom-cursor-active");
     };
@@ -54,9 +66,27 @@ export default function CustomCursor() {
 
   if (!enabled) return null;
 
-  const isLens = mode === "lens";
   const isHover = mode === "hover";
-  const spring = { type: "spring", stiffness: 400, damping: 28 } as const;
+  const spring = { type: "spring", stiffness: 500, damping: 26 } as const;
+
+  // Box half-size: idle wide, hover pulls focus in, click snaps tight.
+  const half = clicking ? 7 : isHover ? 11 : 15;
+  const arm = 6; // corner bracket arm length
+
+  const Corner = ({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) => {
+    const edges: Record<typeof pos, string> = {
+      tl: "left-0 top-0 border-l border-t",
+      tr: "right-0 top-0 border-r border-t",
+      bl: "left-0 bottom-0 border-l border-b",
+      br: "right-0 bottom-0 border-r border-b",
+    };
+    return (
+      <span
+        className={`absolute border-white ${edges[pos]}`}
+        style={{ width: arm, height: arm }}
+      />
+    );
+  };
 
   return (
     <motion.div
@@ -66,61 +96,31 @@ export default function CustomCursor() {
       animate={{ opacity: visible ? 1 : 0 }}
       transition={{ duration: 0.2 }}
     >
-      {/* Ring (default / interactive) */}
+      {/* Focus box — corner brackets tighten on hover / snap on click */}
       <motion.div
-        className="absolute rounded-full border border-white"
+        className="absolute"
+        style={{ translateX: "-50%", translateY: "-50%" }}
+        animate={{ width: half * 2, height: half * 2 }}
+        transition={spring}
+      >
+        <Corner pos="tl" />
+        <Corner pos="tr" />
+        <Corner pos="bl" />
+        <Corner pos="br" />
+      </motion.div>
+
+      {/* Centre — a dot at rest, locking to a focus ring on hover */}
+      <motion.span
+        className="absolute rounded-full border-white bg-white"
         style={{ translateX: "-50%", translateY: "-50%" }}
         animate={{
-          width: isHover ? 46 : 22,
-          height: isHover ? 46 : 22,
-          opacity: isLens ? 0 : 1,
-          backgroundColor: isHover
-            ? "rgba(255,255,255,0.12)"
-            : "rgba(255,255,255,0)",
+          width: isHover ? 7 : 3,
+          height: isHover ? 7 : 3,
+          borderWidth: isHover ? 1 : 0,
+          backgroundColor: isHover ? "rgba(255,255,255,0)" : "rgb(255,255,255)",
         }}
         transition={spring}
       />
-
-      {/* Lens reticle (over the hero) */}
-      <motion.div
-        className="absolute flex flex-col items-center gap-2"
-        style={{ translateX: "-50%", translateY: "-50%" }}
-        animate={{ opacity: isLens ? 1 : 0, scale: isLens ? 1 : 0.5 }}
-        transition={spring}
-      >
-        <div className="relative h-[76px] w-[76px]">
-          <motion.span
-            className="absolute inset-0 rounded-full border border-white"
-            animate={{ rotate: isLens ? 360 : 0 }}
-            transition={{
-              duration: 14,
-              ease: "linear",
-              repeat: Infinity,
-            }}
-          >
-            {/* aperture ticks */}
-            {[0, 90, 180, 270].map((deg) => (
-              <span
-                key={deg}
-                className="absolute left-1/2 top-0 h-2 w-px -translate-x-1/2 bg-white/80"
-                style={{
-                  transformOrigin: "center 38px",
-                  transform: `rotate(${deg}deg)`,
-                }}
-              />
-            ))}
-          </motion.span>
-          <span className="absolute inset-[11px] rounded-full border border-white/45" />
-          {/* play triangle */}
-          <span
-            className="absolute left-1/2 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-l-[10px] border-y-transparent border-l-white"
-            style={{ transform: "translate(-30%, -50%)" }}
-          />
-        </div>
-        <span className="font-sans text-xs font-medium tracking-[0.32em] text-white">
-          SHOWREEL
-        </span>
-      </motion.div>
     </motion.div>
   );
 }
