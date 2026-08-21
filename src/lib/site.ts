@@ -8,7 +8,6 @@ export const site = {
   creator: "Damilola Olawoyin",
   role: "Creative Director",
   email: "damilare@gmail.com",
-  phone: "+234 903 0177 712",
   location: "Lagos, NG",
   copyright: "© 2026 - all rights reserved",
 } as const;

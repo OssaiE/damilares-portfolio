@@ -174,8 +174,6 @@ export default function Footer({
               <a href="https://linkedin.com" className="hover:text-paper">
                 LinkedIn
               </a>
-              {/* phone shown from tablet up only */}
-              <span className="hidden lg:inline"> • {site.phone}</span>
             </p>
             <p className="flex items-center gap-1.5 normal-case lg:uppercase">
               <span className="rec-blink h-1.5 w-1.5 rounded-full bg-primary" />
