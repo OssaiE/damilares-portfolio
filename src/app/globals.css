@@ -117,6 +117,21 @@ html {
   }
 }
 
+/* Touch/mobile section snapping. On phones + tablets the desktop wheel-hijack
+   is off, so the home page advances one [data-snap] section per swipe via
+   NATIVE scroll-snap instead — mirroring the desktop one-section-per-flick,
+   with no JS touchmove hijacking (which froze mobile). SectionScroller toggles
+   the `snap-sections` class on <html>, so it's scoped to the home page and
+   never fights Lenis's virtual scroll on About. */
+html.snap-sections,
+html.snap-sections body {
+  scroll-snap-type: y mandatory;
+}
+html.snap-sections [data-snap] {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Lenis smooth scroll (see Providers.tsx). Lenis drives scrolling on */
 /*  rAF, so native smooth-behavior must yield to it while active.       */

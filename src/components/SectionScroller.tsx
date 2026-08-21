@@ -21,10 +21,9 @@ export default function SectionScroller() {
   const reduce = useReducedMotion();
   const [hijack, setHijack] = useState(false);
 
-  // Section-snapping (and its `touchmove` preventDefault) is a desktop-with-a-
-  // mouse conceit — on touch devices it kills native scrolling and freezes the
-  // page. Only a fine pointer on a ≥768px viewport opts in; phones/tablets
-  // scroll normally.
+  // The JS wheel-hijack (with its `touchmove` preventDefault) is a desktop-with-
+  // a-mouse conceit — on touch devices it kills native scrolling and freezes the
+  // page. Only a fine pointer on a ≥768px viewport opts in there.
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px) and (pointer: fine)");
     const update = () => setHijack(mq.matches);
@@ -32,6 +31,23 @@ export default function SectionScroller() {
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
+
+  // Touch devices instead get NATIVE CSS scroll-snap (one section per swipe,
+  // mirroring the desktop wheel snap) — enabled by toggling `snap-sections` on
+  // <html>. Scoped to the home page since this component only mounts here, so
+  // it never fights Lenis on About. Skipped under reduced-motion.
+  useEffect(() => {
+    if (reduce) return;
+    const mq = window.matchMedia("(pointer: coarse), (max-width: 767px)");
+    const el = document.documentElement;
+    const apply = () => el.classList.toggle("snap-sections", mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => {
+      mq.removeEventListener("change", apply);
+      el.classList.remove("snap-sections");
+    };
+  }, [reduce]);
 
   useEffect(() => {
     if (reduce || !hijack) return;
