@@ -81,14 +81,20 @@ export default function SectionScroller() {
       raf = requestAnimationFrame(step);
     };
 
+    // The index we're gliding toward. Steps advance from THIS (not the live,
+    // mid-tween scroll position) so a step can never skip ahead just because the
+    // previous glide hasn't landed yet.
+    let targetIndex = nearestIndex();
+
     const goToIndex = (i: number) => {
       const clamped = Math.max(0, Math.min(sections.length - 1, i));
+      targetIndex = clamped;
       const target = sections[clamped];
       if (target) tweenTo(topOf(target));
     };
 
     const step = (dir: number) => {
-      const next = nearestIndex() + dir;
+      const next = targetIndex + dir;
       if (next < 0 || next > sections.length - 1) return;
       goToIndex(next);
     };
@@ -104,34 +110,28 @@ export default function SectionScroller() {
       document.body.style.overflow === "hidden" ||
       (target as HTMLElement | null)?.closest?.("[data-lenis-prevent]") != null;
 
-    // --- Wheel: responsive one-step-per-flick via ACCELERATION detection.
-    // A fresh flick's deltas are RISING (accelerating) → fire a step immediately,
-    // even mid-glide or during the previous flick's inertia. The inertia tail is
-    // FALLING (decelerating) → ignored, so momentum never over-scrolls. A short
-    // debounce keeps a single flick to a single step. No lock to wait on, so
-    // rapid flicks chain straight through sections. ---
-    const GESTURE_IDLE = 150; // ms of silence that ends a gesture (resets samples)
-    const STEP_DEBOUNCE = 110; // min ms between steps (one step per flick)
-    let deltas: number[] = [];
+    // --- Wheel: exactly ONE step per gesture.
+    // A continuous flick + its inertia tail is one gesture — it fires a single
+    // step on the first real input and then stays locked until the wheel goes
+    // quiet (GESTURE_IDLE of near-silence). That silence resets the lock and
+    // resyncs the target to where we actually are, so a *separate* flick still
+    // advances another section — but no single flick (with its non-monotonic
+    // trackpad/inertia humps) can ever skip two. ---
+    const GESTURE_IDLE = 160; // ms of silence that ends a gesture
     let prevTs = 0;
-    let lastStep = 0;
-    const avgOf = (arr: number[], n: number) => {
-      const s = arr.slice(-n);
-      return s.length ? s.reduce((a, b) => a + b, 0) / s.length : 0;
-    };
+    let steppedThisGesture = false;
     const onWheel = (e: WheelEvent) => {
       if (blocked(e.target)) return;
       e.preventDefault();
       const now = performance.now();
-      if (now - prevTs > GESTURE_IDLE) deltas = [];
+      if (now - prevTs > GESTURE_IDLE) {
+        // New gesture: unlock and resync to the actual position.
+        steppedThisGesture = false;
+        targetIndex = nearestIndex();
+      }
       prevTs = now;
-      const mag = Math.abs(e.deltaY);
-      deltas.push(mag);
-      if (deltas.length > 80) deltas.shift();
-      if (mag < 4 || now - lastStep < STEP_DEBOUNCE) return;
-      // Fire only while the gesture is accelerating (new input), not decaying.
-      if (avgOf(deltas, 8) < avgOf(deltas, 40)) return;
-      lastStep = now;
+      if (steppedThisGesture || Math.abs(e.deltaY) < 4) return;
+      steppedThisGesture = true;
       step(e.deltaY > 0 ? 1 : -1);
     };
 
