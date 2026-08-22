@@ -78,12 +78,12 @@ export default function FeaturedWorks() {
       aria-label="Selected works"
       className="relative bg-ink text-paper"
     >
-      {/* fela.tv-style yellow backdrop — pinned behind the project cards and
-          revealed as each card zooms/shrinks between projects. Tiled with the
-          wordmark at 20%. The outer layer is absolute (takes no flow space, so
-          it never shifts the panels); the inner layer sticks to the viewport. */}
+      {/* fela.tv-style backdrop — pinned behind the project cards and revealed
+          as each card zooms/shrinks between projects. Dark (ink) tiled with the
+          wordmark in yellow at 10%. The outer layer is absolute (takes no flow
+          space, so it never shifts the panels); the inner layer sticks. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-primary">
+        <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-ink">
           <WordmarkField />
         </div>
       </div>
@@ -132,8 +132,8 @@ export default function FeaturedWorks() {
   );
 }
 
-/** The faint tiled wordmark over the yellow backdrop that peeks between the
- *  project cards — AreyouDami. repeated across the viewport at 10% opacity. */
+/** The faint tiled wordmark over the dark backdrop that peeks between the
+ *  project cards — AreyouDami. in yellow across the viewport at 10% opacity. */
 function WordmarkField() {
   const line = Array.from({ length: 8 }, () => site.name).join(" ");
   return (
@@ -141,7 +141,7 @@ function WordmarkField() {
       {Array.from({ length: 16 }).map((_, i) => (
         <span
           key={i}
-          className="block whitespace-nowrap font-display text-[6.5vh] font-bold leading-none tracking-[-0.02em] text-ink/10"
+          className="block whitespace-nowrap font-display text-[19.5vh] font-bold leading-none tracking-[-0.02em] text-paper/5"
           style={{ transform: `translateX(${i % 2 ? "-8%" : "-3%"})` }}
         >
           {line}
