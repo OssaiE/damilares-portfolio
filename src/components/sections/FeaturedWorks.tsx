@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { motion, useMotionValue, useReducedMotion } from "motion/react";
 import { PlayCircleIcon, PauseCircleIcon } from "@/components/icons";
-import { featuredWorks, type Work } from "@/lib/site";
+import { featuredWorks, site, type Work } from "@/lib/site";
 import { scrollControl } from "@/lib/scrollControl";
 
 const easeSmooth = [0.22, 1, 0.36, 1] as const; // cubic-bezier: easeOutQuint (smooth arrival)
@@ -78,8 +78,19 @@ export default function FeaturedWorks() {
       aria-label="Selected works"
       className="relative bg-ink text-paper"
     >
-      {/* Side progress indicator (desktop) — top aligned to the active tag */}
-      <div className="pointer-events-none sticky top-0 z-40 hidden h-0 md:block">
+      {/* fela.tv-style yellow backdrop — pinned behind the project cards and
+          revealed as each card zooms/shrinks between projects. Tiled with the
+          wordmark at 20%. The outer layer is absolute (takes no flow space, so
+          it never shifts the panels); the inner layer sticks to the viewport. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-primary">
+          <WordmarkField />
+        </div>
+      </div>
+
+      {/* Side progress indicator — top aligned to the active tag. Shown on
+          every breakpoint (mobile + tablet + desktop). */}
+      <div className="pointer-events-none sticky top-0 z-40 h-0">
         <nav
           ref={navRef}
           aria-label="Works progress"
@@ -121,6 +132,25 @@ export default function FeaturedWorks() {
   );
 }
 
+/** The faint tiled wordmark over the yellow backdrop that peeks between the
+ *  project cards — AreyouDami. repeated across the viewport at 10% opacity. */
+function WordmarkField() {
+  const line = Array.from({ length: 8 }, () => site.name).join(" ");
+  return (
+    <div className="absolute inset-0 flex select-none flex-col justify-center gap-[0.6vh]">
+      {Array.from({ length: 16 }).map((_, i) => (
+        <span
+          key={i}
+          className="block whitespace-nowrap font-display text-[6.5vh] font-bold leading-none tracking-[-0.02em] text-ink/10"
+          style={{ transform: `translateX(${i % 2 ? "-8%" : "-3%"})` }}
+        >
+          {line}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function WorkPanel({
   work,
   active,
@@ -136,8 +166,10 @@ function WorkPanel({
   const startRef = useRef(work.clipStart ?? 0);
   const [ready, setReady] = useState(false);
   const len = work.runtime;
+  // Left-inset the copy so it clears the progress indicator (now shown on every
+  // breakpoint), a little tighter on mobile.
   const contentPad =
-    "pl-[var(--gutter)] pr-[var(--gutter)] md:pl-[calc(var(--gutter)+3.25rem)]";
+    "pl-[calc(var(--gutter)+2.5rem)] pr-[var(--gutter)] md:pl-[calc(var(--gutter)+3.25rem)]";
 
   // Scroll-driven zoom: each slide grows from a card (~0.82) to fill the
   // screen (1.0) as it centres, then shrinks again — the fela.tv reveal.
@@ -145,7 +177,6 @@ function WorkPanel({
   // to avoid useScroll's SSR "ref not hydrated" error in the App Router.
   const scale = useMotionValue(1);
   const radius = useMotionValue(0);
-  const opacity = useMotionValue(1);
 
   useEffect(() => {
     if (reduce) return;
@@ -172,7 +203,6 @@ function WorkPanel({
       if (isLast && rectTop < 0) dist = 0;
       scale.set(1 - 0.18 * dist);
       radius.set(26 * dist);
-      opacity.set(1 - 0.5 * dist);
     };
     const onScroll = () => {
       if (ticking) return;
@@ -191,7 +221,7 @@ function WorkPanel({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
-  }, [reduce, scale, radius, opacity, isLast]);
+  }, [reduce, scale, radius, isLast]);
 
   // Fade the footage in once it can paint.
   useEffect(() => {
@@ -245,11 +275,11 @@ function WorkPanel({
     <article
       ref={panelRef}
       data-snap
-      className="relative h-[100svh] w-full overflow-hidden bg-ink md:min-h-[600px]"
+      className="relative h-[100svh] w-full overflow-hidden md:min-h-[600px]"
     >
       {/* The whole slide is a card that zooms to fill as it centres */}
       <motion.div
-        style={reduce ? undefined : { scale, opacity, borderRadius: radius }}
+        style={reduce ? undefined : { scale, borderRadius: radius }}
         className="absolute inset-0 origin-center overflow-hidden bg-ink"
       >
         {/* Footage */}
