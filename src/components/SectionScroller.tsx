@@ -20,6 +20,7 @@ const DURATION = 900; // ms per section glide
 export default function SectionScroller() {
   const reduce = useReducedMotion();
   const [hijack, setHijack] = useState(false);
+  const [touchSnap, setTouchSnap] = useState(false);
 
   // The JS wheel-hijack (with its `touchmove` preventDefault) is a desktop-with-
   // a-mouse conceit — on touch devices it kills native scrolling and freezes the
@@ -32,15 +33,30 @@ export default function SectionScroller() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
+  // Track touch / small-viewport, so the effect re-runs on viewport changes.
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse), (max-width: 767px)");
+    const update = () => setTouchSnap(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   // Touch devices: snap the nearest [data-snap] section to fill the viewport
   // once a scroll settles. Native CSS scroll-snap proved unreliable on mobile
-  // Safari's momentum scrolling, so this waits for the scroll to go idle and
-  // then glides to the nearest section. Crucially it never preventDefaults touch
-  // — native scrolling stays free, we only settle it at the end — so the page
-  // can't freeze. Scoped to the home page (this component only mounts here).
+  // Safari's momentum scrolling, so this waits for the scroll to go idle (or a
+  // `scrollend`) and glides to the nearest section with a manual rAF tween.
+  // The tween uses the POSITIONAL window.scrollTo(0, y) — the same mechanism the
+  // desktop hijack uses — because iOS Safari ignores scrollTo({behavior:"smooth"}),
+  // which is why the earlier version didn't snap on the deployed (iOS) build. It
+  // never preventDefaults touch, so native scrolling stays free and can't
+  // freeze. Scoped to the home page (this component only mounts here).
   useEffect(() => {
-    if (reduce) return;
-    const touch = window.matchMedia("(pointer: coarse), (max-width: 767px)");
+    if (reduce || !touchSnap) return;
+
+    // Own the programmatic motion — CSS smooth-behavior fights the rAF tween.
+    const prevBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
 
     let sections = Array.from(
       document.querySelectorAll<HTMLElement>("[data-snap]"),
@@ -52,12 +68,30 @@ export default function SectionScroller() {
     };
     const topOf = (el: HTMLElement) =>
       Math.round(el.getBoundingClientRect().top + window.scrollY);
+    const ease = (t: number) => 1 - Math.pow(1 - t, 5); // easeOutQuint
 
     let idle: ReturnType<typeof setTimeout>;
-    let snapUntil = 0; // ignore scroll events while our own glide runs
+    let raf = 0;
+    let gliding = false;
+
+    const glideTo = (y: number) => {
+      const startY = window.scrollY;
+      const dist = y - startY;
+      if (Math.abs(dist) < 2) return;
+      cancelAnimationFrame(raf);
+      gliding = true;
+      const t0 = performance.now();
+      const frame = (now: number) => {
+        const p = Math.min(1, (now - t0) / 460);
+        window.scrollTo(0, startY + dist * ease(p));
+        if (p < 1) raf = requestAnimationFrame(frame);
+        else gliding = false;
+      };
+      raf = requestAnimationFrame(frame);
+    };
 
     const snap = () => {
-      if (!touch.matches) return; // desktop uses the wheel-hijack above
+      if (gliding) return;
       if (document.body.style.overflow === "hidden") return; // modal open
       const y = window.scrollY;
       let best: HTMLElement | undefined;
@@ -69,27 +103,27 @@ export default function SectionScroller() {
           best = s;
         }
       }
-      if (!best) return;
-      const target = topOf(best);
-      if (Math.abs(target - y) < 2) return; // already aligned
-      snapUntil = performance.now() + 700;
-      window.scrollTo({ top: target, behavior: "smooth" });
+      if (best) glideTo(topOf(best));
     };
 
     const onScroll = () => {
-      if (!touch.matches || performance.now() < snapUntil) return;
+      if (gliding) return; // ignore the tween's own scroll events
       clearTimeout(idle);
-      idle = setTimeout(snap, 120); // fire once the scroll goes quiet
+      idle = setTimeout(snap, 130); // fire once the scroll goes quiet
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scrollend", snap); // reliable settle where supported
     window.addEventListener("resize", collect);
     return () => {
       clearTimeout(idle);
+      cancelAnimationFrame(raf);
+      document.documentElement.style.scrollBehavior = prevBehavior;
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scrollend", snap);
       window.removeEventListener("resize", collect);
     };
-  }, [reduce]);
+  }, [reduce, touchSnap]);
 
   useEffect(() => {
     if (reduce || !hijack) return;
