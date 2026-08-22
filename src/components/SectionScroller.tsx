@@ -21,10 +21,9 @@ export default function SectionScroller() {
   const reduce = useReducedMotion();
   const [hijack, setHijack] = useState(false);
 
-  // Section-snapping (and its `touchmove` preventDefault) is a desktop-with-a-
-  // mouse conceit — on touch devices it kills native scrolling and freezes the
-  // page. Only a fine pointer on a ≥768px viewport opts in; phones/tablets
-  // scroll normally.
+  // The JS wheel-hijack (with its `touchmove` preventDefault) is a desktop-with-
+  // a-mouse conceit — on touch devices it kills native scrolling and freezes the
+  // page. Only a fine pointer on a ≥768px viewport opts in there.
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px) and (pointer: fine)");
     const update = () => setHijack(mq.matches);
@@ -32,6 +31,65 @@ export default function SectionScroller() {
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
+
+  // Touch devices: snap the nearest [data-snap] section to fill the viewport
+  // once a scroll settles. Native CSS scroll-snap proved unreliable on mobile
+  // Safari's momentum scrolling, so this waits for the scroll to go idle and
+  // then glides to the nearest section. Crucially it never preventDefaults touch
+  // — native scrolling stays free, we only settle it at the end — so the page
+  // can't freeze. Scoped to the home page (this component only mounts here).
+  useEffect(() => {
+    if (reduce) return;
+    const touch = window.matchMedia("(pointer: coarse), (max-width: 767px)");
+
+    let sections = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-snap]"),
+    );
+    const collect = () => {
+      sections = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-snap]"),
+      );
+    };
+    const topOf = (el: HTMLElement) =>
+      Math.round(el.getBoundingClientRect().top + window.scrollY);
+
+    let idle: ReturnType<typeof setTimeout>;
+    let snapUntil = 0; // ignore scroll events while our own glide runs
+
+    const snap = () => {
+      if (!touch.matches) return; // desktop uses the wheel-hijack above
+      if (document.body.style.overflow === "hidden") return; // modal open
+      const y = window.scrollY;
+      let best: HTMLElement | undefined;
+      let bestD = Infinity;
+      for (const s of sections) {
+        const d = Math.abs(topOf(s) - y);
+        if (d < bestD) {
+          bestD = d;
+          best = s;
+        }
+      }
+      if (!best) return;
+      const target = topOf(best);
+      if (Math.abs(target - y) < 2) return; // already aligned
+      snapUntil = performance.now() + 700;
+      window.scrollTo({ top: target, behavior: "smooth" });
+    };
+
+    const onScroll = () => {
+      if (!touch.matches || performance.now() < snapUntil) return;
+      clearTimeout(idle);
+      idle = setTimeout(snap, 120); // fire once the scroll goes quiet
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", collect);
+    return () => {
+      clearTimeout(idle);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", collect);
+    };
+  }, [reduce]);
 
   useEffect(() => {
     if (reduce || !hijack) return;
