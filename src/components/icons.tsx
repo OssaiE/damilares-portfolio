@@ -203,18 +203,17 @@ export function LinkedInIcon(props: IconProps) {
 }
 
 export function YouTubeIcon(props: IconProps) {
+  // Solid YouTube play badge. One currentColor shape with the play triangle
+  // knocked out (evenodd), so the badge follows the text colour and the arrow
+  // shows the button background through it — inverts cleanly on hover.
   return (
-    <svg {...base(props)}>
-      <rect
-        x={2.8}
-        y={6}
-        width={18.4}
-        height={12}
-        rx={3.5}
-        stroke="currentColor"
-        strokeWidth={1.6}
+    <svg {...base(props)} viewBox="0 0 24 16">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M19.8673 16H3.86599C1.72496 16 0 14.1065 0 11.7775V4.22249C0 1.88402 1.73363 0 3.86599 0H19.8673C22.0083 0 23.7333 1.89349 23.7333 4.22249V11.7775C23.742 14.116 22.0083 16 19.8673 16ZM16.0634 7.88166L9.33203 4V11.7633L16.0634 7.88166Z"
+        fill="currentColor"
       />
-      <path d="M10.5 9.4v5.2l4.4-2.6-4.4-2.6z" fill="currentColor" />
     </svg>
   );
 }

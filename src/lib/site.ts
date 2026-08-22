@@ -57,7 +57,10 @@ export const hero = {
 /*  each gallery `src` below — everything else is data-driven.          */
 /* ------------------------------------------------------------------ */
 export type GalleryShot = {
+  /** Image src, or (for a video shot) the poster still shown before it plays. */
   src: string;
+  /** When set, the frame plays this muted looping clip instead of a still. */
+  video?: { webm?: string; mp4?: string };
   /** CSS aspect-ratio for the frame (keeps photos uncropped-ish, varied). */
   aspect: string;
   /** What he's doing in the frame — top hover line (Inter regular 20). */
@@ -69,7 +72,7 @@ export type GalleryShot = {
 export const about = {
   chapterOne: "Based on a True Story.",
   chapterTwo: "The Creative in His Element.",
-  portrait: "/images/hero-poster.jpg", // → /images/about/portrait.jpg
+  portrait: "/images/about/portrait.jpg",
   intro: `${site.creator} — ${site.role}, ${site.location}.`,
   bio: [
     "I'm Damilare Olawoyin, a filmmaker and creative director who lives for moments that move people. For me, storytelling isn't just a craft; it's an instinct. It's the way I see the world. Every frame, every cut, every sound is a chance to pull an audience into an experience they won't forget.",
@@ -79,15 +82,43 @@ export const about = {
     "I'm constantly pushing myself, experimenting with new techniques, blending practical and digital storytelling, and exploring the next evolution of visual language. At the core of everything I make is one mission:",
     "To craft visuals that resonate… stories that breathe… and experiences that stay with you long after the screen goes dark.",
   ] as string[],
+  // Real delivered stills + BTS clips (captions are provisional — tweak freely).
   gallery: [
-    { src: "/images/about/el-1.jpg", aspect: "3 / 4", action: "On Set", role: "Videographer" },
-    { src: "/images/about/el-2.jpg", aspect: "3 / 2", action: "Directing the Crew", role: "Creative Director" },
-    { src: "/images/about/el-3.jpg", aspect: "3 / 4", action: "On Stage", role: "Creative Director" },
-    { src: "/images/about/el-4.jpg", aspect: "3 / 4", action: "Monitoring the Shot", role: "Director" },
-    { src: "/images/about/el-5.jpg", aspect: "4 / 3", action: "In Conversation", role: "Creative Director" },
-    { src: "/images/about/el-6.jpg", aspect: "3 / 4", action: "Spotlight", role: "Director" },
-    { src: "/images/about/el-7.jpg", aspect: "4 / 3", action: "Behind the Lens", role: "Videographer" },
-    { src: "/images/about/el-8.jpg", aspect: "3 / 2", action: "Calling the Shot", role: "Creative Director" },
+    { src: "/images/about/g-spotlight.jpg", aspect: "3 / 4", action: "In the Spotlight", role: "Performer" },
+    {
+      src: "/images/about/about-1.jpg",
+      video: { webm: "/videos/about-1.webm", mp4: "/videos/about-1.mp4" },
+      aspect: "16 / 9",
+      action: "Behind the Scenes",
+      role: "Director",
+    },
+    { src: "/images/about/g-directing.jpg", aspect: "3 / 2", action: "Directing the Show", role: "Director" },
+    {
+      src: "/images/about/about-3.jpg",
+      video: { webm: "/videos/about-3.webm", mp4: "/videos/about-3.mp4" },
+      aspect: "9 / 16",
+      action: "On the Move",
+      role: "Camera Operator",
+    },
+    { src: "/images/about/g-onset.jpg", aspect: "3 / 4", action: "On Set", role: "Creative Director" },
+    {
+      src: "/images/about/about-2.jpg",
+      video: { webm: "/videos/about-2.webm", mp4: "/videos/about-2.mp4" },
+      aspect: "16 / 9",
+      action: "Rolling",
+      role: "Videographer",
+    },
+    { src: "/images/about/g-camera.jpg", aspect: "3 / 4", action: "Behind the Camera", role: "Videographer" },
+    { src: "/images/about/g-studio.jpg", aspect: "3 / 4", action: "In the Studio", role: "Creative Director" },
+    {
+      src: "/images/about/about-4.jpg",
+      video: { webm: "/videos/about-4.webm", mp4: "/videos/about-4.mp4" },
+      aspect: "16 / 9",
+      action: "Calling the Shot",
+      role: "Creative Director",
+    },
+    { src: "/images/about/g-stage.jpg", aspect: "3 / 4", action: "Live Show", role: "Creative Director" },
+    { src: "/images/about/g-mic.jpg", aspect: "3 / 4", action: "On Stage", role: "Performer" },
   ] as GalleryShot[],
 } as const;
 
@@ -378,29 +409,117 @@ export type Work = {
   /** Where in the source video the 5s preview window begins. */
   clipStart?: number;
   poster?: string;
-  video?: { mp4: string; webm?: string };
+  video?: { mp4?: string; webm?: string };
+  /** Optional hand-set line breaks for the reel title (each entry is one line). */
+  titleLines?: string[];
 };
 
 /**
  * Selected works — the FIRST 8 of the catalogue, scrolling through the works
  * section one project at a time (fela.tv-style), side indicator 1 → 8.
  *
- * NOTE: real preview clips weren't provided (the catalogue links to YouTube),
- * so the two ship-ready source clips (palmwine + showreel-bg) are reused here
- * as PLACEHOLDER previews — each panel loops a different 5-second window
- * (`clipStart`). Swap `video`/`poster` per project as final footage is delivered.
+ * Real delivered clips live in REAL_PREVIEWS (keyed by project slug); each is a
+ * WebM + MP4 (iOS Safari) pair. Projects without final footage yet fall back to
+ * the two ship-ready placeholder sources (palmwine + showreel-bg), each looping a
+ * different 5-second window via FW_CLIP_START.
  */
-const FW_CLIP_START = [0, 6, 10, 8, 5, 4, 14, 12] as const;
+const FW_CLIP_START = [2, 6, 10, 8, 5, 4, 14, 12] as const;
 
-export const featuredWorks: Work[] = PROJECT_DATA.slice(0, 8).map((p, i) => ({
-  title: p.title,
-  category: p.category,
-  year: p.year,
-  runtime: 5,
-  clipStart: FW_CLIP_START[i],
-  poster: ytThumb(p.youtubeUrl),
-  video:
-    i % 2 === 0
-      ? { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" }
-      : { mp4: "/videos/showreel-bg.mp4" },
-}));
+const REAL_PREVIEWS: Record<
+  string,
+  { webm: string; mp4: string; clipStart?: number }
+> = {
+  "talking-the-most-prandas": {
+    webm: "/videos/prandas-talking-the-most.webm",
+    mp4: "/videos/prandas-talking-the-most.mp4",
+    clipStart: 1,
+  },
+  "adroh-homes": {
+    webm: "/videos/adron-homes-ojude-oba.webm",
+    mp4: "/videos/adron-homes-ojude-oba.mp4",
+    clipStart: 1,
+  },
+  "american-cola": {
+    webm: "/videos/american-cola.webm",
+    mp4: "/videos/american-cola.mp4",
+    clipStart: 1,
+  },
+  "trace-mental-health-campaign": {
+    webm: "/videos/trace-mental-health-campaign.webm",
+    mp4: "/videos/trace-mental-health-campaign.mp4",
+    clipStart: 1,
+  },
+  "trace-sessions-with-fola": {
+    webm: "/videos/trace-sessions-fola.webm",
+    mp4: "/videos/trace-sessions-fola.mp4",
+    clipStart: 1,
+  },
+  "victoria-orenze-father-we-are-grateful": {
+    webm: "/videos/victoria-orenze-father-we-are-grateful.webm",
+    mp4: "/videos/victoria-orenze-father-we-are-grateful.mp4",
+    clipStart: 1,
+  },
+  "palmwine-fest-the-making": {
+    webm: "/videos/palmwine-fest-the-making.webm",
+    mp4: "/videos/palmwine-fest-the-making.mp4",
+    clipStart: 1,
+  },
+  "tracelive-with-wande-coal": {
+    webm: "/videos/tracelive-with-wande-coal.webm",
+    mp4: "/videos/tracelive-with-wande-coal.mp4",
+    clipStart: 1,
+  },
+};
+
+/**
+ * Homepage reel lineup (8 slots). Starts from the first 8 of the catalogue, then
+ * swaps placeholder-only slots for projects that now have real footage. Kept as an
+ * explicit title→title map so the reel can be re-curated freely.
+ */
+const FEATURED_SWAPS: Record<string, string> = {
+  "Lord's Achievers Awards — Johnny Drille": "Trace Mental Health Campaign",
+  "Sooyah Bistro": "Trace Sessions with Fola",
+  "TraceLive with Ruger": "Victoria Orenze — Father We Are Grateful",
+  "Lord's Achievers Awards — IB Quake": "TraceLive with Wande Coal",
+};
+
+const FEATURED_SOURCE = PROJECT_DATA.slice(0, 8).map((p) => {
+  const swapTitle = FEATURED_SWAPS[p.title];
+  return (swapTitle && PROJECT_DATA.find((q) => q.title === swapTitle)) || p;
+});
+
+// Lead the reel with American Cola; Talking the Most — Prandas moves to slot 5.
+[FEATURED_SOURCE[0], FEATURED_SOURCE[4]] = [FEATURED_SOURCE[4], FEATURED_SOURCE[0]];
+
+/** Hand-set title line breaks for the reel (keyed by project slug). Also carries
+ *  small display-only text tweaks (e.g. "Adron", "Trace Live", "Documentary"). */
+const FEATURED_TITLE_LINES: Record<string, string[]> = {
+  "talking-the-most-prandas": ["Talking the", "Most - Prandas"],
+  "trace-sessions-with-fola": ["Trace Sessions", "With FOLA"],
+  "victoria-orenze-father-we-are-grateful": [
+    "Victoria Orenze - Father",
+    "We Are Grateful",
+  ],
+  "adroh-homes": ["Adron Homes"],
+  "palmwine-fest-the-making": ["Palmwine Fest", "Documentary"],
+  "tracelive-with-wande-coal": ["Trace Live with", "Wande Coal"],
+  "trace-mental-health-campaign": ["Trace Mental", "Health Campaign"],
+};
+
+export const featuredWorks: Work[] = FEATURED_SOURCE.map((p, i) => {
+  const real = REAL_PREVIEWS[slug(p.title)];
+  return {
+    title: p.title,
+    category: p.category,
+    year: p.year,
+    runtime: 5,
+    clipStart: real?.clipStart ?? FW_CLIP_START[i],
+    poster: ytThumb(p.youtubeUrl),
+    titleLines: FEATURED_TITLE_LINES[slug(p.title)],
+    video: real
+      ? { webm: real.webm, mp4: real.mp4 }
+      : i % 2 === 0
+        ? { mp4: "/videos/palmwine.mp4", webm: "/videos/palmwine.webm" }
+        : { mp4: "/videos/showreel-bg.mp4" },
+  };
+});

@@ -91,7 +91,8 @@ export default function Hero() {
           }}
         >
           <BackgroundVideo
-            mp4="/videos/showreel-bg.mp4"
+            webm="/videos/showreel-hero.webm"
+            mp4="/videos/showreel-hero.mp4"
             poster="/images/hero-poster.jpg"
             position="50% 50%"
           />

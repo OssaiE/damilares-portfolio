@@ -121,7 +121,12 @@ export default function FeaturedWorks() {
       </div>
 
       {featuredWorks.map((work, i) => (
-        <WorkPanel key={work.title} work={work} active={active === i} />
+        <WorkPanel
+          key={work.title}
+          work={work}
+          active={active === i}
+          isLast={i === featuredWorks.length - 1}
+        />
       ))}
     </section>
   );
@@ -146,7 +151,15 @@ function WordmarkField() {
   );
 }
 
-function WorkPanel({ work, active }: { work: Work; active: boolean }) {
+function WorkPanel({
+  work,
+  active,
+  isLast = false,
+}: {
+  work: Work;
+  active: boolean;
+  isLast?: boolean;
+}) {
   const reduce = useReducedMotion();
   const panelRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -183,7 +196,11 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
       ticking = false;
       const rectTop = docTop - window.scrollY; // panel top relative to viewport
       // 0 when the slide is centred, → 1 by ~half a viewport away either side.
-      const dist = Math.min(1, Math.abs(rectTop) / (vh * 0.55));
+      let dist = Math.min(1, Math.abs(rectTop) / (vh * 0.55));
+      // The last panel still zooms IN as it arrives, but must NOT shrink on the
+      // way out — there's no next slide to fill the screen, so it holds full
+      // until the footer scrolls up over it.
+      if (isLast && rectTop < 0) dist = 0;
       scale.set(1 - 0.18 * dist);
       radius.set(26 * dist);
     };
@@ -204,7 +221,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
-  }, [reduce, scale, radius]);
+  }, [reduce, scale, radius, isLast]);
 
   // Fade the footage in once it can paint.
   useEffect(() => {
@@ -279,7 +296,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
           {work.video?.webm && (
             <source src={work.video.webm} type="video/webm" />
           )}
-          {work.video && <source src={work.video.mp4} type="video/mp4" />}
+          {work.video?.mp4 && <source src={work.video.mp4} type="video/mp4" />}
         </video>
 
         {/* Legibility scrim so the yellow type reads over any frame.
@@ -301,25 +318,25 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
               {work.category}
             </motion.span>
 
-            {/* Title — Inter 96px / extrabold / 90% lh / -2px tracking. On web
-                the title may run wider than the progress bar — up to 60% of the
-                screen — so the name and subtitle sit on their own lines; mobile
-                still wraps within the bar-matched width. */}
-            <h2 className="mt-2 max-w-[clamp(260px,34vw,600px)] font-sans text-[40px] font-extrabold leading-none tracking-[-2px] text-primary md:max-w-[60vw] md:text-8xl">
-              <span className="block overflow-hidden pb-[0.1em]">
+            {/* Title — hand-set line breaks per project (see titleLines), sized
+                so every title fits within two lines at each breakpoint. */}
+            <h2 className="mt-2 font-sans text-[26px] font-extrabold leading-[1.04] tracking-[-1px] text-primary md:text-[40px] lg:text-6xl">
+              <span className="block overflow-hidden pb-[0.14em]">
                 <motion.span
                   className="block"
                   initial={{ y: "110%" }}
                   animate={active ? { y: "0%" } : { y: "110%" }}
                   transition={{ duration: 0.8, ease: easeSmooth }}
                 >
-                  {/* Drop the em-dash separator — show the name and its
-                      subtitle on their own lines instead. */}
-                  {work.title.split(/\s*—\s*/).map((part, i) => (
-                    <span key={i} className="block">
-                      {part}
-                    </span>
-                  ))}
+                  {/* Hand-set line breaks per project (falls back to the title
+                      with the em-dash dropped). Each entry is one line. */}
+                  {(work.titleLines ?? [work.title.replace(/\s*—\s*/g, " ")]).map(
+                    (line, li) => (
+                      <span key={li} className="block whitespace-nowrap">
+                        {line}
+                      </span>
+                    ),
+                  )}
                 </motion.span>
               </span>
             </h2>
