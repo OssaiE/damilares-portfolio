@@ -63,7 +63,7 @@ export default function Hero() {
       <motion.section
         data-snap
         aria-label="Intro"
-        className="relative isolate h-[100svh] min-h-[620px] w-full overflow-hidden bg-ink"
+        className="relative isolate h-[100svh] w-full overflow-hidden bg-ink md:min-h-[620px]"
         animate={{
           x: shaking ? [0, 1.6, -1.1, 1, -1.3, 0.6, 0] : 0,
           y: shaking ? [0, -1.1, 1.3, -0.9, 1, -0.5, 0] : 0,

@@ -228,7 +228,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
     <article
       ref={panelRef}
       data-snap
-      className="relative h-[100svh] min-h-[600px] w-full overflow-hidden bg-ink"
+      className="relative h-[100svh] w-full overflow-hidden bg-ink md:min-h-[600px]"
     >
       {/* The whole slide is a card that zooms to fill as it centres */}
       <motion.div
