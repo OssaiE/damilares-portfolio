@@ -32,20 +32,62 @@ export default function SectionScroller() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Touch devices instead get NATIVE CSS scroll-snap (one section per swipe,
-  // mirroring the desktop wheel snap) — enabled by toggling `snap-sections` on
-  // <html>. Scoped to the home page since this component only mounts here, so
-  // it never fights Lenis on About. Skipped under reduced-motion.
+  // Touch devices: snap the nearest [data-snap] section to fill the viewport
+  // once a scroll settles. Native CSS scroll-snap proved unreliable on mobile
+  // Safari's momentum scrolling, so this waits for the scroll to go idle and
+  // then glides to the nearest section. Crucially it never preventDefaults touch
+  // — native scrolling stays free, we only settle it at the end — so the page
+  // can't freeze. Scoped to the home page (this component only mounts here).
   useEffect(() => {
     if (reduce) return;
-    const mq = window.matchMedia("(pointer: coarse), (max-width: 767px)");
-    const el = document.documentElement;
-    const apply = () => el.classList.toggle("snap-sections", mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
+    const touch = window.matchMedia("(pointer: coarse), (max-width: 767px)");
+
+    let sections = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-snap]"),
+    );
+    const collect = () => {
+      sections = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-snap]"),
+      );
+    };
+    const topOf = (el: HTMLElement) =>
+      Math.round(el.getBoundingClientRect().top + window.scrollY);
+
+    let idle: ReturnType<typeof setTimeout>;
+    let snapUntil = 0; // ignore scroll events while our own glide runs
+
+    const snap = () => {
+      if (!touch.matches) return; // desktop uses the wheel-hijack above
+      if (document.body.style.overflow === "hidden") return; // modal open
+      const y = window.scrollY;
+      let best: HTMLElement | undefined;
+      let bestD = Infinity;
+      for (const s of sections) {
+        const d = Math.abs(topOf(s) - y);
+        if (d < bestD) {
+          bestD = d;
+          best = s;
+        }
+      }
+      if (!best) return;
+      const target = topOf(best);
+      if (Math.abs(target - y) < 2) return; // already aligned
+      snapUntil = performance.now() + 700;
+      window.scrollTo({ top: target, behavior: "smooth" });
+    };
+
+    const onScroll = () => {
+      if (!touch.matches || performance.now() < snapUntil) return;
+      clearTimeout(idle);
+      idle = setTimeout(snap, 120); // fire once the scroll goes quiet
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", collect);
     return () => {
-      mq.removeEventListener("change", apply);
-      el.classList.remove("snap-sections");
+      clearTimeout(idle);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", collect);
     };
   }, [reduce]);
 
