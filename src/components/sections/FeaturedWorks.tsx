@@ -128,7 +128,7 @@ export default function FeaturedWorks() {
 }
 
 /** The faint tiled wordmark over the yellow backdrop that peeks between the
- *  project cards — AreyouDami. repeated across the viewport at 20% opacity. */
+ *  project cards — AreyouDami. repeated across the viewport at 10% opacity. */
 function WordmarkField() {
   const line = Array.from({ length: 8 }, () => site.name).join(" ");
   return (
@@ -136,7 +136,7 @@ function WordmarkField() {
       {Array.from({ length: 16 }).map((_, i) => (
         <span
           key={i}
-          className="block whitespace-nowrap font-display text-[6.5vh] font-bold leading-none tracking-[-0.02em] text-ink/20"
+          className="block whitespace-nowrap font-display text-[6.5vh] font-bold leading-none tracking-[-0.02em] text-ink/10"
           style={{ transform: `translateX(${i % 2 ? "-8%" : "-3%"})` }}
         >
           {line}
@@ -164,7 +164,6 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
   // to avoid useScroll's SSR "ref not hydrated" error in the App Router.
   const scale = useMotionValue(1);
   const radius = useMotionValue(0);
-  const opacity = useMotionValue(1);
 
   useEffect(() => {
     if (reduce) return;
@@ -187,7 +186,6 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
       const dist = Math.min(1, Math.abs(rectTop) / (vh * 0.55));
       scale.set(1 - 0.18 * dist);
       radius.set(26 * dist);
-      opacity.set(1 - 0.5 * dist);
     };
     const onScroll = () => {
       if (ticking) return;
@@ -206,7 +204,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
-  }, [reduce, scale, radius, opacity]);
+  }, [reduce, scale, radius]);
 
   // Fade the footage in once it can paint.
   useEffect(() => {
@@ -264,7 +262,7 @@ function WorkPanel({ work, active }: { work: Work; active: boolean }) {
     >
       {/* The whole slide is a card that zooms to fill as it centres */}
       <motion.div
-        style={reduce ? undefined : { scale, opacity, borderRadius: radius }}
+        style={reduce ? undefined : { scale, borderRadius: radius }}
         className="absolute inset-0 origin-center overflow-hidden bg-ink"
       >
         {/* Footage */}
