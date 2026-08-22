@@ -247,7 +247,10 @@ const BRACKETS = [
 /** The recording frame's corner brackets. Lives in its own persistent layer so
  *  it survives the reveal, then travels/shrinks to a small nav-like box. */
 function RecordingFrame({ revealing }: { revealing: boolean }) {
-  const full = { top: "6vh", left: "6vw", right: "6vw", bottom: "6vh" };
+  // Inset in vmin (same unit as the corner labels) so the brackets sit inside
+  // the REC / timecode / lens / label text on every aspect ratio — the widest
+  // label (the lens readout) reaches ~19vmin from the edge.
+  const full = { top: "9vmin", left: "21vmin", right: "21vmin", bottom: "9vmin" };
   // A small box centred on screen (like a focus box) — not tucked in a corner.
   const box = { top: "43vh", left: "41vw", right: "41vw", bottom: "43vh" };
   return (

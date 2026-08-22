@@ -158,7 +158,7 @@ export default function Footer({
           <div className="flex items-center justify-center py-14 lg:py-20">
             <Wordmark
               as="p"
-              className="text-[11vw] leading-none text-paper lg:text-[9vw]"
+              className="text-[11vw] leading-none text-primary lg:text-[9vw]"
             />
           </div>
 
