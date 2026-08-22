@@ -117,6 +117,24 @@ html {
   }
 }
 
+/* Touch/mobile section snapping — mirrors fela.tv's featured scroll. On phones
+   + tablets the desktop wheel-hijack is off, so the home page advances one
+   [data-snap] section per swipe via NATIVE CSS scroll-snap (the exact recipe
+   fela.tv uses on mobile: mandatory snap on the scroller, align-start +
+   stop-always on each full-height section). `scroll-behavior: auto` is
+   essential — the site's default `smooth` fights scroll-snap on iOS Safari and
+   was why snapping didn't work on the deployed build. SectionScroller toggles
+   the `snap-sections` class on <html>, scoping this to the home page so it
+   never fights Lenis's virtual scroll on About. */
+html.snap-sections {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: auto;
+}
+html.snap-sections [data-snap] {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Lenis smooth scroll (see Providers.tsx). Lenis drives scrolling on */
 /*  rAF, so native smooth-behavior must yield to it while active.       */

@@ -33,7 +33,7 @@ export default function SectionScroller() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Track touch / small-viewport, so the effect re-runs on viewport changes.
+  // Track touch / small-viewport, so the class toggle re-runs on viewport change.
   useEffect(() => {
     const mq = window.matchMedia("(pointer: coarse), (max-width: 767px)");
     const update = () => setTouchSnap(mq.matches);
@@ -42,87 +42,16 @@ export default function SectionScroller() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Touch devices: snap the nearest [data-snap] section to fill the viewport
-  // once a scroll settles. Native CSS scroll-snap proved unreliable on mobile
-  // Safari's momentum scrolling, so this waits for the scroll to go idle (or a
-  // `scrollend`) and glides to the nearest section with a manual rAF tween.
-  // The tween uses the POSITIONAL window.scrollTo(0, y) — the same mechanism the
-  // desktop hijack uses — because iOS Safari ignores scrollTo({behavior:"smooth"}),
-  // which is why the earlier version didn't snap on the deployed (iOS) build. It
-  // never preventDefaults touch, so native scrolling stays free and can't
-  // freeze. Scoped to the home page (this component only mounts here).
+  // Touch devices get native CSS scroll-snap (the fela.tv mobile recipe) — one
+  // full-height [data-snap] section per swipe — by toggling `snap-sections` on
+  // <html>. The CSS lives in globals.css. Scoped to the home page (this
+  // component only mounts here), so it never fights Lenis on About. Skipped
+  // under reduced-motion.
   useEffect(() => {
-    if (reduce || !touchSnap) return;
-
-    // Own the programmatic motion — CSS smooth-behavior fights the rAF tween.
-    const prevBehavior = document.documentElement.style.scrollBehavior;
-    document.documentElement.style.scrollBehavior = "auto";
-
-    let sections = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-snap]"),
-    );
-    const collect = () => {
-      sections = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-snap]"),
-      );
-    };
-    const topOf = (el: HTMLElement) =>
-      Math.round(el.getBoundingClientRect().top + window.scrollY);
-    const ease = (t: number) => 1 - Math.pow(1 - t, 5); // easeOutQuint
-
-    let idle: ReturnType<typeof setTimeout>;
-    let raf = 0;
-    let gliding = false;
-
-    const glideTo = (y: number) => {
-      const startY = window.scrollY;
-      const dist = y - startY;
-      if (Math.abs(dist) < 2) return;
-      cancelAnimationFrame(raf);
-      gliding = true;
-      const t0 = performance.now();
-      const frame = (now: number) => {
-        const p = Math.min(1, (now - t0) / 460);
-        window.scrollTo(0, startY + dist * ease(p));
-        if (p < 1) raf = requestAnimationFrame(frame);
-        else gliding = false;
-      };
-      raf = requestAnimationFrame(frame);
-    };
-
-    const snap = () => {
-      if (gliding) return;
-      if (document.body.style.overflow === "hidden") return; // modal open
-      const y = window.scrollY;
-      let best: HTMLElement | undefined;
-      let bestD = Infinity;
-      for (const s of sections) {
-        const d = Math.abs(topOf(s) - y);
-        if (d < bestD) {
-          bestD = d;
-          best = s;
-        }
-      }
-      if (best) glideTo(topOf(best));
-    };
-
-    const onScroll = () => {
-      if (gliding) return; // ignore the tween's own scroll events
-      clearTimeout(idle);
-      idle = setTimeout(snap, 130); // fire once the scroll goes quiet
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("scrollend", snap); // reliable settle where supported
-    window.addEventListener("resize", collect);
-    return () => {
-      clearTimeout(idle);
-      cancelAnimationFrame(raf);
-      document.documentElement.style.scrollBehavior = prevBehavior;
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("scrollend", snap);
-      window.removeEventListener("resize", collect);
-    };
+    if (reduce) return;
+    const el = document.documentElement;
+    el.classList.toggle("snap-sections", touchSnap);
+    return () => el.classList.remove("snap-sections");
   }, [reduce, touchSnap]);
 
   useEffect(() => {
