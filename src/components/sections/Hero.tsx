@@ -19,13 +19,12 @@ const COPY_LINES: { t: string; bi?: boolean }[][] = [
 
 /** Focal-length "lenses" reframe the footage — dramatic zoom + a focus-pull. */
 const lensScale: Record<string, number> = {
-  "135mm": 1.62,
   "50mm": 1.28,
   "35mm": 1.0,
 };
 
 export default function Hero() {
-  const [lens, setLens] = useState("135mm");
+  const [lens, setLens] = useState("50mm");
   const [focusing, setFocusing] = useState(false);
 
   // Entrance staging (gated on the intro reveal): type the copy → chips →

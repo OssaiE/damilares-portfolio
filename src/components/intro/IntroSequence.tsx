@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useIntro } from "./IntroContext";
+import { playBeep } from "@/lib/beep";
 
 /* ------------------------------------------------------------------ *
  * Landing entrance — a film "leader" countdown then a camera viewfinder.
@@ -57,6 +58,14 @@ export default function IntroSequence() {
     t.push(window.setTimeout(() => setStage("gone"), 5500));
     return () => t.forEach((id) => window.clearTimeout(id));
   }, [reveal]);
+
+  // Recording "beep" the moment the viewfinder's Action call appears (synced to
+  // its 0.12s entrance). Silent under reduced-motion via playBeep itself.
+  useEffect(() => {
+    if (stage !== "camera") return;
+    const t = window.setTimeout(() => playBeep(), 120);
+    return () => window.clearTimeout(t);
+  }, [stage]);
 
   if (stage === "gone") return null;
   const revealing = stage === "reveal";
