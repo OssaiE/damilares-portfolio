@@ -7,7 +7,7 @@ export const site = {
   name: "AreyouDami.",
   creator: "Damilola Olawoyin",
   role: "Creative Director",
-  email: "damilaredhrey@gmail.com",
+  email: "dolawoyin03@gmail.com",
   location: "Lagos, NG",
   copyright: "© 2026 - all rights reserved",
 } as const;
@@ -45,9 +45,8 @@ export const hero = {
   lines: [
     "I'm Damilare Olawoyin.",
     "I'm a creative based in Lagos, Nigeria",
-    "Bringing stories that push emotions",
   ],
-  lenses: ["135mm", "50mm", "35mm"],
+  lenses: ["50mm", "35mm"],
 } as const;
 
 /* ------------------------------------------------------------------ */
