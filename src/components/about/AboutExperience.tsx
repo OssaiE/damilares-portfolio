@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLenis } from "lenis/react";
 import SiteChrome from "@/components/SiteChrome";
 import Footer from "@/components/layout/Footer";
 import GridBackdrop from "@/components/works/GridBackdrop";
@@ -136,14 +137,55 @@ function GalleryMedia({ shot }: { shot: GalleryShot }) {
   );
 }
 
-function GalleryFrame({ shot }: { shot: GalleryShot }) {
+/**
+ * Desktop collage layout — one tile per gallery item (index-aligned). The whole
+ * canvas pans horizontally with the scroll; photos are the large base frames,
+ * videos are the smaller tiles layered on top (higher z), which also masks their
+ * lower resolution. x is along the canvas (vw), y/h are viewport-height units.
+ */
+type CollageTile = { x: number; y: number; h: number; z: number; rot: number };
+const COLLAGE_W = 262; // canvas width in vw
+const COLLAGE: CollageTile[] = [
+  { x: 1, y: 9, h: 68, z: 2, rot: -1.5 }, //  0 img · spotlight
+  { x: 23, y: 36, h: 27, z: 6, rot: 2 }, //   1 vid · behind the scenes
+  { x: 38, y: 13, h: 54, z: 1, rot: 0 }, //   2 img · directing (landscape)
+  { x: 71, y: 29, h: 42, z: 6, rot: -2 }, //  3 vid · on the move (portrait)
+  { x: 90, y: 6, h: 72, z: 2, rot: 1 }, //    4 img · on set
+  { x: 114, y: 37, h: 25, z: 6, rot: -2.5 }, //5 vid · rolling
+  { x: 137, y: 16, h: 60, z: 1, rot: 0.5 }, // 6 img · behind the camera
+  { x: 165, y: 8, h: 66, z: 3, rot: -1 }, //  7 img · in the studio
+  { x: 188, y: 36, h: 27, z: 6, rot: 1.5 }, // 8 vid · calling the shot
+  { x: 205, y: 13, h: 62, z: 1, rot: 1 }, //  9 img · live show
+  { x: 231, y: 22, h: 56, z: 2, rot: -1 }, // 10 img · on stage
+];
+
+function GalleryFrame({
+  shot,
+  layout,
+}: {
+  shot: GalleryShot;
+  layout: CollageTile;
+}) {
   return (
     <figure
       tabIndex={0}
-      style={{ aspectRatio: shot.aspect }}
-      className="group relative h-full shrink-0 overflow-hidden bg-ink outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+      style={{
+        left: `${layout.x}vw`,
+        top: `${layout.y}vh`,
+        height: `${layout.h}vh`,
+        aspectRatio: shot.aspect,
+        zIndex: layout.z,
+        transform: `rotate(${layout.rot}deg)`,
+      }}
+      className="group absolute overflow-hidden bg-ink shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)] outline-none ring-1 ring-white/10 focus-visible:ring-2 focus-visible:ring-primary"
     >
       <GalleryMedia shot={shot} />
+
+      {/* Film grain over the footage — subtle, sells the cinematic feel. */}
+      <div
+        aria-hidden
+        className="grain pointer-events-none absolute inset-0 opacity-[0.13]"
+      />
 
       {/* Black overlay + caption — fade in centred on hover / focus only.
           Top: what he's doing (Inter regular 20). Below: role (Inter semibold 24). */}
@@ -168,6 +210,9 @@ function Cinematic() {
   const galleryRowRef = useRef<HTMLDivElement>(null);
   const scrimRef = useRef<HTMLDivElement>(null);
   const metrics = useRef({ creditsPx: 1, galleryPx: 0, travel: 1, startY: 0 });
+  // True while the horizontal reel is on screen with frames left to traverse —
+  // gates whether horizontal wheel/trackpad input is funnelled into the scroll.
+  const galleryActiveRef = useRef(false);
   const [spacerH, setSpacerH] = useState("300vh");
 
   // Intro reveal — wordmark types in → portrait wipes open from the middle → bio
@@ -265,12 +310,39 @@ function Cinematic() {
         const gs = clamp(s - creditsPx, 0, galleryPx);
         const enter = lerp(vw * 0.05, 0, te); // soft sideways settle on entry
         galleryRow.style.transform = `translate3d(${(enter - gs).toFixed(1)}px, 0, 0)`;
+        galleryActiveRef.current = te > 0.5 && gs < galleryPx - 1;
       }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   }, []);
+
+  // Second input into the SAME scroll timeline: a horizontal trackpad/wheel
+  // swipe advances the reel exactly like scrolling does — it nudges the SAME
+  // Lenis scroll position the vertical wheel drives, so the two inputs can never
+  // desync (and the exit into the footer still works). Only engages while the
+  // reel is active AND the gesture is horizontal-dominant, so ordinary vertical
+  // scrolling (with a little sideways wobble) is untouched. preventDefault +
+  // overscroll-behavior block the macOS swipe-back gesture.
+  const lenis = useLenis();
+  useEffect(() => {
+    if (!lenis) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!galleryActiveRef.current) return;
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // vertical → native
+      e.preventDefault();
+      lenis.scrollTo(lenis.scroll + e.deltaX, { immediate: true });
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    const root = document.documentElement;
+    const prevOverscroll = root.style.overscrollBehaviorX;
+    root.style.overscrollBehaviorX = "contain";
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      root.style.overscrollBehaviorX = prevOverscroll;
+    };
+  }, [lenis]);
 
   return (
     <>
@@ -400,14 +472,19 @@ function Cinematic() {
           className="absolute inset-0 opacity-0"
           style={{ pointerEvents: "none" }}
         >
-          {/* Horizontal photo reel — full-bleed frames, edge to edge, no gaps */}
+          {/* Horizontal collage canvas — an art-directed montage that pans with
+              the scroll; large photos with smaller video tiles layered on top. */}
           <div
             ref={galleryRowRef}
-            className="absolute inset-0 z-0 flex"
-            style={{ transform: "translate3d(0,0,0)", willChange: "transform" }}
+            className="absolute left-0 top-0 z-0 h-full"
+            style={{
+              width: `${COLLAGE_W}vw`,
+              transform: "translate3d(0,0,0)",
+              willChange: "transform",
+            }}
           >
             {about.gallery.map((shot, i) => (
-              <GalleryFrame key={i} shot={shot} />
+              <GalleryFrame key={i} shot={shot} layout={COLLAGE[i]} />
             ))}
           </div>
 
@@ -417,7 +494,7 @@ function Cinematic() {
           {/* Pinned title — on top, fixed to the bottom edge as the reel scrolls */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-[var(--gutter)] pb-14 md:pb-20">
             <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85 md:text-sm">
-              Chapter Two
+              Part Two
             </p>
             <h2 className="mt-3 max-w-[16ch] font-sans text-8xl font-extrabold leading-[0.9] tracking-[-0.02em] text-primary [text-shadow:0_2px_30px_rgba(0,0,0,0.6)]">
               {about.chapterTwo}
@@ -532,7 +609,7 @@ function Fallback() {
         <section className="py-14">
           <div className="mb-6 px-[var(--gutter)]">
             <p className="font-sans text-xs uppercase tracking-[0.22em] text-primary/85">
-              Chapter Two
+              Part Two
             </p>
             <h2 className="mt-2 font-sans text-[clamp(2rem,10vw,3.25rem)] font-bold leading-[0.98] tracking-[-0.02em] text-primary">
               {about.chapterTwo}
@@ -546,6 +623,10 @@ function Fallback() {
                 className="relative w-full overflow-hidden bg-ink"
               >
                 <GalleryMedia shot={shot} />
+                <div
+                  aria-hidden
+                  className="grain pointer-events-none absolute inset-0 opacity-[0.13]"
+                />
                 <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-4">
                   <p className="font-sans text-base font-normal text-primary/80">
                     {shot.action}

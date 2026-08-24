@@ -97,7 +97,7 @@ export const about = {
       video: { webm: "/videos/about-3.webm", mp4: "/videos/about-3.mp4" },
       aspect: "9 / 16",
       action: "On the Move",
-      role: "Camera Operator",
+      role: "Director",
     },
     { src: "/images/about/g-onset.jpg", aspect: "3 / 4", action: "On Set", role: "Creative Director" },
     {
@@ -105,9 +105,9 @@ export const about = {
       video: { webm: "/videos/about-2.webm", mp4: "/videos/about-2.mp4" },
       aspect: "16 / 9",
       action: "Rolling",
-      role: "Videographer",
+      role: "Director",
     },
-    { src: "/images/about/g-camera.jpg", aspect: "3 / 4", action: "Behind the Camera", role: "Videographer" },
+    { src: "/images/about/g-camera.jpg", aspect: "3 / 4", action: "Behind the Camera", role: "Creative Director" },
     { src: "/images/about/g-studio.jpg", aspect: "3 / 4", action: "In the Studio", role: "Creative Director" },
     {
       src: "/images/about/about-4.jpg",
