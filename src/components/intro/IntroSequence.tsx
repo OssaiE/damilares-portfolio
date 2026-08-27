@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useIntro } from "./IntroContext";
-import { playBeep } from "@/lib/beep";
 
 /* ------------------------------------------------------------------ *
  * Landing entrance — a film "leader" countdown then a camera viewfinder.
@@ -30,7 +29,8 @@ const SONAR = "#55575A"; // sonar rings / ticks / crosshair
 export default function IntroSequence() {
   const { reveal } = useIntro();
   const [stage, setStage] = useState<Stage>("count");
-  const [n, setN] = useState(3);
+  // Starts at 0 (no digit) — the "3" pops in on the clip's first beep.
+  const [n, setN] = useState(0);
   // Touch devices (phones/tablets) still play the intro, but in a "lite" mode
   // that drops the animated backdrop-filter blur focus-hunt — that blur
   // compositing is what can lock up mobile Safari on a single frame. The
@@ -52,30 +52,25 @@ export default function IntroSequence() {
     audio.volume = 0.8;
     audio.play().catch(() => {});
 
+    // Timeline synced to the clip's beeps: 3·2·1 pop on the beeps at 0.71 /
+    // 1.71 / 2.71 s, and "Action" lands on the final beep at 3.71 s.
     const t: number[] = [];
-    t.push(window.setTimeout(() => setN(2), 850));
-    t.push(window.setTimeout(() => setN(1), 1700));
-    t.push(window.setTimeout(() => setStage("camera"), 2550));
+    t.push(window.setTimeout(() => setN(3), 710));
+    t.push(window.setTimeout(() => setN(2), 1710));
+    t.push(window.setTimeout(() => setN(1), 2710));
+    t.push(window.setTimeout(() => setStage("camera"), 3710));
     t.push(
       window.setTimeout(() => {
         setStage("reveal");
         reveal();
-      }, 3750),
+      }, 4600),
     );
-    t.push(window.setTimeout(() => setStage("gone"), 5500));
+    t.push(window.setTimeout(() => setStage("gone"), 6350));
     return () => {
       t.forEach((id) => window.clearTimeout(id));
       audio.pause();
     };
   }, [reveal]);
-
-  // Recording "beep" the moment the viewfinder's Action call appears (synced to
-  // its 0.12s entrance). Silent under reduced-motion via playBeep itself.
-  useEffect(() => {
-    if (stage !== "camera") return;
-    const t = window.setTimeout(() => playBeep(), 120);
-    return () => window.clearTimeout(t);
-  }, [stage]);
 
   if (stage === "gone") return null;
   const revealing = stage === "reveal";
@@ -236,16 +231,18 @@ function Countdown({ n }: { n: number }) {
 
           <div className="absolute inset-0 flex items-center justify-center">
             <AnimatePresence mode="popLayout">
-              <motion.span
-                key={n}
-                className="font-display text-[26vmin] font-bold leading-none text-primary [text-shadow:0_2px_40px_rgba(0,0,0,0.5)]"
-                initial={{ scale: 1.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {n}
-              </motion.span>
+              {n > 0 && (
+                <motion.span
+                  key={n}
+                  className="font-display text-[26vmin] font-bold leading-none text-primary [text-shadow:0_2px_40px_rgba(0,0,0,0.5)]"
+                  initial={{ scale: 1.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {n}
+                </motion.span>
+              )}
             </AnimatePresence>
           </div>
         </div>
