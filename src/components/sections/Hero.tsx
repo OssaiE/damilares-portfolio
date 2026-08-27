@@ -6,6 +6,7 @@ import BackgroundVideo from "@/components/ui/BackgroundVideo";
 import FramingGuides from "@/components/ui/FramingGuides";
 import MaskedWordmark from "@/components/ui/MaskedWordmark";
 import { useIntro } from "@/components/intro/IntroContext";
+import { playType } from "@/lib/typewriter";
 import { hero } from "@/lib/site";
 
 const easeExpo = [0.16, 1, 0.3, 1] as const;
@@ -204,6 +205,7 @@ function TypedCopy({
     const id = window.setInterval(() => {
       i += 1;
       setTyped(i);
+      playType(); // typewriter key click per character
       if (i >= total) {
         window.clearInterval(id);
         onDone();
