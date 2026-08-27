@@ -45,6 +45,13 @@ export default function IntroSequence() {
       return;
     }
     setLite(window.matchMedia("(pointer: coarse)").matches);
+
+    // Countdown sound — the provided clip, played as the leader counts 3·2·1.
+    // Best-effort: browsers may block audio until the visitor interacts.
+    const audio = new Audio("/audio/countdown.mp3");
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+
     const t: number[] = [];
     t.push(window.setTimeout(() => setN(2), 850));
     t.push(window.setTimeout(() => setN(1), 1700));
@@ -56,7 +63,10 @@ export default function IntroSequence() {
       }, 3750),
     );
     t.push(window.setTimeout(() => setStage("gone"), 5500));
-    return () => t.forEach((id) => window.clearTimeout(id));
+    return () => {
+      t.forEach((id) => window.clearTimeout(id));
+      audio.pause();
+    };
   }, [reveal]);
 
   // Recording "beep" the moment the viewfinder's Action call appears (synced to
