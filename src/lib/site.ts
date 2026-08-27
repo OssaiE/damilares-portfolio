@@ -43,8 +43,10 @@ export const meta = [
 export const hero = {
   intro: "Hi",
   lines: [
-    "I'm Damilare Olawoyin.",
-    "I'm a creative based in Lagos, Nigeria",
+    "I'm Damilare Olawoyin",
+    "I'm a filmmaker and creative director",
+    "based in Lagos, Nigeria",
+    "Crafting stories and making art is my hobby",
   ],
   lenses: ["50mm", "35mm"],
 } as const;

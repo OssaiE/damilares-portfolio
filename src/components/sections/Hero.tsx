@@ -13,7 +13,7 @@ const easeExpo = [0.16, 1, 0.3, 1] as const;
 /** The typed copy, split so the name can be bold-italic mid-type. */
 const COPY_LINES: { t: string; bi?: boolean }[][] = [
   [{ t: hero.intro }],
-  [{ t: "I'm " }, { t: "Damilare Olawoyin.", bi: true }],
+  [{ t: "I'm " }, { t: "Damilare Olawoyin", bi: true }],
   ...hero.lines.slice(1).map((t) => [{ t }]),
 ];
 
