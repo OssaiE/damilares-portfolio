@@ -144,7 +144,7 @@ function GalleryMedia({ shot }: { shot: GalleryShot }) {
  * lower resolution. x is along the canvas (vw), y/h are viewport-height units.
  */
 type CollageTile = { x: number; y: number; h: number; z: number; rot: number };
-const COLLAGE_W = 262; // canvas width in vw
+const COLLAGE_W = 330; // canvas width in vw
 const COLLAGE: CollageTile[] = [
   { x: 1, y: 9, h: 68, z: 2, rot: -1.5 }, //  0 img · spotlight
   { x: 23, y: 36, h: 27, z: 6, rot: 2 }, //   1 vid · behind the scenes
@@ -156,7 +156,9 @@ const COLLAGE: CollageTile[] = [
   { x: 165, y: 8, h: 66, z: 3, rot: -1 }, //  7 img · in the studio
   { x: 188, y: 36, h: 27, z: 6, rot: 1.5 }, // 8 vid · calling the shot
   { x: 205, y: 13, h: 62, z: 1, rot: 1 }, //  9 img · live show
-  { x: 231, y: 22, h: 56, z: 2, rot: -1 }, // 10 img · on stage
+  { x: 225, y: 27, h: 44, z: 2, rot: -1 }, // 10 img · studio session (landscape)
+  { x: 256, y: 8, h: 58, z: 2, rot: -1 }, //  11 img · on the shoot (landscape)
+  { x: 288, y: 36, h: 46, z: 3, rot: 1.5 }, //12 img · live production (landscape)
 ];
 
 function GalleryFrame({
@@ -188,13 +190,10 @@ function GalleryFrame({
       />
 
       {/* Black overlay + caption — fade in centred on hover / focus only.
-          Top: what he's doing (Inter regular 20). Below: role (Inter semibold 24). */}
-      <figcaption className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-ink/0 p-6 text-center opacity-0 transition-[opacity,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-ink/55 group-hover:opacity-100 group-focus-visible:bg-ink/55 group-focus-visible:opacity-100">
-        <p className="font-sans text-xl font-normal leading-snug text-primary/80 [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
-          {shot.action}
-        </p>
+          Single line: what he's doing (Inter semibold). */}
+      <figcaption className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center bg-ink/0 p-6 text-center opacity-0 transition-[opacity,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-ink/55 group-hover:opacity-100 group-focus-visible:bg-ink/55 group-focus-visible:opacity-100">
         <p className="font-sans text-2xl font-semibold leading-snug text-primary [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
-          {shot.role}
+          {shot.action}
         </p>
       </figcaption>
     </figure>
@@ -628,11 +627,8 @@ function Fallback() {
                   className="grain pointer-events-none absolute inset-0 opacity-[0.13]"
                 />
                 <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-4">
-                  <p className="font-sans text-base font-normal text-primary/80">
+                  <p className="font-sans text-xl font-semibold text-primary">
                     {shot.action}
-                  </p>
-                  <p className="mt-0.5 font-sans text-xl font-semibold text-primary">
-                    {shot.role}
                   </p>
                 </figcaption>
               </figure>

@@ -24,11 +24,10 @@ export const nav: NavItem[] = [
 export type Social = { label: string; href: string; icon: string };
 
 export const socials: Social[] = [
-  { label: "Instagram", href: "https://instagram.com", icon: "/social/instagram.svg" },
-  { label: "X", href: "https://x.com", icon: "/social/x.svg" },
-  { label: "LinkedIn", href: "https://linkedin.com", icon: "/social/linkedin.svg" },
-  { label: "YouTube", href: "https://youtube.com", icon: "/social/youtube.svg" },
-  { label: "TikTok", href: "https://tiktok.com", icon: "/social/tiktok.svg" },
+  { label: "Instagram", href: "https://www.instagram.com/areyoudami", icon: "/social/instagram.svg" },
+  { label: "X", href: "https://x.com/areyoudami", icon: "/social/x.svg" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/damilareolawoyin", icon: "/social/linkedin.svg" },
+  { label: "TikTok", href: "https://www.tiktok.com/@idamilare", icon: "/social/tiktok.svg" },
 ];
 
 /** Footer meta columns */
@@ -119,7 +118,9 @@ export const about = {
       role: "Creative Director",
     },
     { src: "/images/about/g-stage.jpg", aspect: "3 / 4", action: "Live Show", role: "Creative Director" },
-    { src: "/images/about/g-mic.jpg", aspect: "3 / 4", action: "On Stage", role: "Performer" },
+    { src: "/images/about/g-session.jpg", aspect: "4 / 3", action: "In the Session", role: "Creative Director" },
+    { src: "/images/about/g-shoot.jpg", aspect: "4 / 3", action: "On the Shoot", role: "Director" },
+    { src: "/images/about/g-control.jpg", aspect: "4 / 3", action: "Live Production", role: "Director" },
   ] as GalleryShot[],
 } as const;
 
@@ -211,11 +212,11 @@ const PROJECT_DATA: {
     youtubeUrl: "https://youtu.be/j0-GoI2b7Pc",
   },
   {
-    title: "Adroh Homes",
+    title: "Adron Homes",
     category: "TV Commercial",
     year: "2025",
     role: ["Creative Director", "Editor"],
-    client: "Adroh Homes",
+    client: "Adron Homes",
     description:
       "A culturally rooted commercial inspired by the colour, elegance, and spectacle of Ojude Oba. I contributed to the visual execution, capturing the celebration through cinematic compositions, vibrant imagery, and a strong sense of place and tradition.",
     youtubeUrl: "https://youtu.be/NpVuuC07kZ0",
@@ -435,7 +436,7 @@ const REAL_PREVIEWS: Record<
     mp4: "/videos/prandas-talking-the-most.mp4",
     clipStart: 1,
   },
-  "adroh-homes": {
+  "adron-homes": {
     webm: "/videos/adron-homes-ojude-oba.webm",
     mp4: "/videos/adron-homes-ojude-oba.mp4",
     clipStart: 1,
@@ -470,6 +471,11 @@ const REAL_PREVIEWS: Record<
     mp4: "/videos/tracelive-with-wande-coal.mp4",
     clipStart: 1,
   },
+  "tracelive-with-ruger": {
+    webm: "/videos/tracelive-with-ruger.webm",
+    mp4: "/videos/tracelive-with-ruger.mp4",
+    clipStart: 1,
+  },
 };
 
 /**
@@ -481,7 +487,7 @@ const FEATURED_SWAPS: Record<string, string> = {
   "Lord's Achievers Awards — Johnny Drille": "Trace Mental Health Campaign",
   "Sooyah Bistro": "Trace Sessions with Fola",
   "TraceLive with Ruger": "Victoria Orenze — Father We Are Grateful",
-  "Lord's Achievers Awards — IB Quake": "TraceLive with Wande Coal",
+  "Lord's Achievers Awards — IB Quake": "TraceLive with Ruger",
 };
 
 const FEATURED_SOURCE = PROJECT_DATA.slice(0, 8).map((p) => {
@@ -501,9 +507,10 @@ const FEATURED_TITLE_LINES: Record<string, string[]> = {
     "Victoria Orenze - Father",
     "We Are Grateful",
   ],
-  "adroh-homes": ["Adron Homes"],
+  "adron-homes": ["Adron Homes"],
   "palmwine-fest-the-making": ["Palmwine Fest", "Documentary"],
   "tracelive-with-wande-coal": ["Trace Live with", "Wande Coal"],
+  "tracelive-with-ruger": ["TraceLive Promo", "for Ruger"],
   "trace-mental-health-campaign": ["Trace Mental", "Health Campaign"],
 };
 
