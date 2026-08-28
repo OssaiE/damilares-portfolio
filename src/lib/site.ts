@@ -402,6 +402,52 @@ export const projects: Project[] = PROJECT_DATA.map((p, i) => {
   };
 });
 
+/** Works List view sections. Each renders as its own table (with its own
+ *  header row); `slugs` is the exact display order within the section. */
+export const worksSections: { title: string; slugs: string[] }[] = [
+  {
+    title: "Commercials",
+    slugs: ["tracelive-with-ruger", "american-cola", "adroh-homes"],
+  },
+  {
+    title: "Documentary",
+    slugs: [
+      "sooyah-bistro",
+      "palmwine-fest-the-making",
+      "trace-mental-health-campaign",
+    ],
+  },
+  {
+    title: "Music Visuals",
+    slugs: [
+      "talking-the-most-prandas",
+      "trace-sessions-with-fola",
+      "trace-sessions-with-mohbad",
+      "victoria-orenze-father-we-are-grateful",
+    ],
+  },
+  {
+    title: "TV Shows",
+    slugs: [
+      "hennessy-vs-class-viii-ep-3",
+      "hennessy-vs-class-viii-ep-5",
+      "tracelive-with-wande-coal",
+      "flavour-s-homecoming-concert",
+      "this-week-tonight-nescaf-ep-3",
+      "this-week-tonight-nescaf-ep-2",
+    ],
+  },
+  {
+    title: "Editorials",
+    slugs: [
+      "lord-s-achievers-awards-ib-quake",
+      "lord-s-achievers-awards-johnny-drille",
+      "get-to-know-dami-oniru",
+      "get-to-know-olumide-oworu",
+    ],
+  },
+];
+
 export type Work = {
   title: string;
   category: string;

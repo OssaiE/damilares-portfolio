@@ -3,15 +3,17 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useMotionValue, useSpring } from "motion/react";
-import type { Project } from "@/lib/site";
+import { worksSections, type Project } from "@/lib/site";
 
 const COLS =
   "md:grid md:grid-cols-[minmax(0,1.9fr)_0.9fr_0.6fr_1.4fr] md:items-center md:gap-6";
 
 /**
- * List view — editorial table (Projects / Client / Year / Services). Hovering a
- * row paints a full-bleed yellow highlight (dark text) and floats a monochrome
- * preview near the pointer. Keyboard focus gets the same highlight (no preview).
+ * List view — editorial tables grouped into categories (Commercials,
+ * Documentary, …), each its own table (Projects / Client / Year / Services)
+ * under a big yellow section header. Hovering a row paints a full-bleed yellow
+ * highlight (dark text) and floats a monochrome preview near the pointer.
+ * Keyboard focus gets the same highlight (no preview).
  */
 export default function ProjectList({
   projects,
@@ -23,7 +25,24 @@ export default function ProjectList({
   reduce: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // Rows now span several tables, so the active row is tracked by id.
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Group projects into the configured sections (in order); any project not
+  // listed in a section falls into a trailing "More" table so nothing is lost.
+  const bySlug = new Map(projects.map((p) => [p.slug, p]));
+  const used = new Set<string>();
+  const sections = worksSections
+    .map((s) => {
+      const items = s.slugs
+        .map((sl) => bySlug.get(sl))
+        .filter((p): p is Project => Boolean(p));
+      items.forEach((p) => used.add(p.slug));
+      return { title: s.title, items };
+    })
+    .filter((s) => s.items.length > 0);
+  const leftover = projects.filter((p) => !used.has(p.slug));
+  if (leftover.length) sections.push({ title: "More", items: leftover });
   const [preview, setPreview] = useState<{ src: string; show: boolean }>({
     src: "",
     show: false,
@@ -55,77 +74,88 @@ export default function ProjectList({
 
   return (
     <div ref={containerRef} className="relative px-[var(--gutter)]">
-      {/* Column headings */}
-      <div
-        className={`hidden border-b border-white/10 pb-3 font-sans text-sm text-subtext ${COLS}`}
-      >
-        <span>Projects</span>
-        <span>Client</span>
-        <span>Year</span>
-        <span>Services</span>
-      </div>
+      {sections.map((section) => (
+        <section key={section.title} className="mb-12 last:mb-0">
+          {/* Yellow section header */}
+          <h2 className="mb-4 font-sans text-[20px] font-bold tracking-tight text-primary">
+            {section.title}
+          </h2>
 
-      <ul>
-        {projects.map((project, i) => {
-          const active = i === activeIndex;
-          return (
-            <li key={project.id}>
-              <Link
-                href={project.href}
-                aria-current={active ? "true" : undefined}
-                onPointerEnter={() => {
-                  if (!canHover) return;
-                  setActiveIndex(i);
-                  setPreview({ src: project.thumbnail, show: true });
-                }}
-                onPointerMove={canHover ? moveTo : undefined}
-                onPointerLeave={() => {
-                  if (!canHover) return;
-                  setActiveIndex((cur) => (cur === i ? null : cur));
-                  setPreview((p) => ({ ...p, show: false }));
-                }}
-                onFocus={() => setActiveIndex(i)}
-                onBlur={() =>
-                  setActiveIndex((cur) => (cur === i ? null : cur))
-                }
-                className={`relative block py-4 outline-none transition-colors duration-150 ${COLS} ${
-                  active ? "text-ink" : "text-paper"
-                }`}
-              >
-                {/* Full-bleed yellow highlight */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-y-0 left-[calc(var(--gutter)*-1)] right-[calc(var(--gutter)*-1)] bg-primary transition-opacity duration-150"
-                  style={{ opacity: active ? 1 : 0 }}
-                />
-                <span className="relative z-[1] block font-sans text-base">
-                  {project.title}
-                </span>
-                <span
-                  className={`relative z-[1] mt-1 block font-sans text-sm md:mt-0 md:text-base ${
-                    active ? "text-ink" : "text-subtext md:text-paper"
-                  }`}
-                >
-                  <span className="md:hidden">
-                    {project.client} · {project.year}
-                  </span>
-                  <span className="hidden md:inline">{project.client}</span>
-                </span>
-                <span className="relative z-[1] hidden font-sans text-base md:block">
-                  {project.year}
-                </span>
-                <span
-                  className={`relative z-[1] mt-1 block font-sans text-sm md:mt-0 md:text-base ${
-                    active ? "text-ink" : "text-subtext md:text-paper"
-                  }`}
-                >
-                  {project.services}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+          {/* Column headings */}
+          <div
+            className={`hidden border-b border-white/10 pb-3 font-sans text-sm text-subtext ${COLS}`}
+          >
+            <span>Projects</span>
+            <span>Client</span>
+            <span>Year</span>
+            <span>Role</span>
+          </div>
+
+          <ul>
+            {section.items.map((project) => {
+              const active = project.id === activeId;
+              return (
+                <li key={project.id}>
+                  <Link
+                    href={project.href}
+                    aria-current={active ? "true" : undefined}
+                    onPointerEnter={() => {
+                      if (!canHover) return;
+                      setActiveId(project.id);
+                      setPreview({ src: project.thumbnail, show: true });
+                    }}
+                    onPointerMove={canHover ? moveTo : undefined}
+                    onPointerLeave={() => {
+                      if (!canHover) return;
+                      setActiveId((cur) =>
+                        cur === project.id ? null : cur,
+                      );
+                      setPreview((p) => ({ ...p, show: false }));
+                    }}
+                    onFocus={() => setActiveId(project.id)}
+                    onBlur={() =>
+                      setActiveId((cur) => (cur === project.id ? null : cur))
+                    }
+                    className={`relative block py-4 outline-none transition-colors duration-150 ${COLS} ${
+                      active ? "text-ink" : "text-paper"
+                    }`}
+                  >
+                    {/* Full-bleed yellow highlight */}
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-y-0 left-[calc(var(--gutter)*-1)] right-[calc(var(--gutter)*-1)] bg-primary transition-opacity duration-150"
+                      style={{ opacity: active ? 1 : 0 }}
+                    />
+                    <span className="relative z-[1] block font-sans text-base">
+                      {project.title}
+                    </span>
+                    <span
+                      className={`relative z-[1] mt-1 block font-sans text-sm md:mt-0 md:text-base ${
+                        active ? "text-ink" : "text-subtext md:text-paper"
+                      }`}
+                    >
+                      <span className="md:hidden">
+                        {project.client} · {project.year}
+                      </span>
+                      <span className="hidden md:inline">{project.client}</span>
+                    </span>
+                    <span className="relative z-[1] hidden font-sans text-base md:block">
+                      {project.year}
+                    </span>
+                    <span
+                      className={`relative z-[1] mt-1 block font-sans text-sm md:mt-0 md:text-base ${
+                        active ? "text-ink" : "text-subtext md:text-paper"
+                      }`}
+                    >
+                      {project.role.join(", ")}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
 
       {/* Floating monochrome preview (pointer only) */}
       {canHover && (
