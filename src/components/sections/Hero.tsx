@@ -200,16 +200,27 @@ function TypedCopy({
   useEffect(() => {
     if (!play) return;
     setTyped(0);
+
+    // Keyboard-typing sound over the typing animation, stopped once it lands.
+    // Best-effort — browsers may block audio until the visitor interacts.
+    const audio = new Audio("/audio/typing.mp3");
+    audio.volume = 0.55;
+    audio.play().catch(() => {});
+
     let i = 0;
     const id = window.setInterval(() => {
       i += 1;
       setTyped(i);
       if (i >= total) {
         window.clearInterval(id);
+        audio.pause();
         onDone();
       }
     }, 26);
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearInterval(id);
+      audio.pause();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [play]);
 

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useIntro } from "./IntroContext";
-import { playBeep } from "@/lib/beep";
 
 /* ------------------------------------------------------------------ *
  * Landing entrance — a film "leader" countdown then a camera viewfinder.
@@ -30,7 +29,8 @@ const SONAR = "#55575A"; // sonar rings / ticks / crosshair
 export default function IntroSequence() {
   const { reveal } = useIntro();
   const [stage, setStage] = useState<Stage>("count");
-  const [n, setN] = useState(3);
+  // Starts at 0 (no digit) — the "3" pops in on the clip's first beep.
+  const [n, setN] = useState(0);
   // Touch devices (phones/tablets) still play the intro, but in a "lite" mode
   // that drops the animated backdrop-filter blur focus-hunt — that blur
   // compositing is what can lock up mobile Safari on a single frame. The
@@ -45,27 +45,32 @@ export default function IntroSequence() {
       return;
     }
     setLite(window.matchMedia("(pointer: coarse)").matches);
+
+    // Countdown sound — the provided clip, played as the leader counts 3·2·1.
+    // Best-effort: browsers may block audio until the visitor interacts.
+    const audio = new Audio("/audio/countdown.mp3");
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+
+    // Timeline synced to the clip's beeps: 3·2·1 pop on the beeps at 0.71 /
+    // 1.71 / 2.71 s, and "Action" lands on the final beep at 3.71 s.
     const t: number[] = [];
-    t.push(window.setTimeout(() => setN(2), 850));
-    t.push(window.setTimeout(() => setN(1), 1700));
-    t.push(window.setTimeout(() => setStage("camera"), 2550));
+    t.push(window.setTimeout(() => setN(3), 710));
+    t.push(window.setTimeout(() => setN(2), 1710));
+    t.push(window.setTimeout(() => setN(1), 2710));
+    t.push(window.setTimeout(() => setStage("camera"), 3710));
     t.push(
       window.setTimeout(() => {
         setStage("reveal");
         reveal();
-      }, 3750),
+      }, 4600),
     );
-    t.push(window.setTimeout(() => setStage("gone"), 5500));
-    return () => t.forEach((id) => window.clearTimeout(id));
+    t.push(window.setTimeout(() => setStage("gone"), 6350));
+    return () => {
+      t.forEach((id) => window.clearTimeout(id));
+      audio.pause();
+    };
   }, [reveal]);
-
-  // Recording "beep" the moment the viewfinder's Action call appears (synced to
-  // its 0.12s entrance). Silent under reduced-motion via playBeep itself.
-  useEffect(() => {
-    if (stage !== "camera") return;
-    const t = window.setTimeout(() => playBeep(), 120);
-    return () => window.clearTimeout(t);
-  }, [stage]);
 
   if (stage === "gone") return null;
   const revealing = stage === "reveal";
@@ -226,16 +231,18 @@ function Countdown({ n }: { n: number }) {
 
           <div className="absolute inset-0 flex items-center justify-center">
             <AnimatePresence mode="popLayout">
-              <motion.span
-                key={n}
-                className="font-display text-[26vmin] font-bold leading-none text-primary [text-shadow:0_2px_40px_rgba(0,0,0,0.5)]"
-                initial={{ scale: 1.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {n}
-              </motion.span>
+              {n > 0 && (
+                <motion.span
+                  key={n}
+                  className="font-display text-[26vmin] font-bold leading-none text-primary [text-shadow:0_2px_40px_rgba(0,0,0,0.5)]"
+                  initial={{ scale: 1.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {n}
+                </motion.span>
+              )}
             </AnimatePresence>
           </div>
         </div>
@@ -253,38 +260,67 @@ const BRACKETS = [
   "right-0 bottom-0 border-r border-b",
 ] as const;
 
-/** The recording frame's corner brackets. Lives in its own persistent layer so
- *  it survives the reveal, then travels/shrinks to a small nav-like box. */
+/** The recording frame's corner brackets. On reveal the four corners scale down
+ *  (as one group, about the centre) into a small focus box, then that box morphs
+ *  into a centre crosshair before it all fades — the "camera locks focus, then
+ *  shoots" beat. Scaling is a single GPU transform so it stays smooth (the old
+ *  version tweened between mixed vmin/vh insets, which was janky). */
 function RecordingFrame({ revealing }: { revealing: boolean }) {
   // Inset in vmin (same unit as the corner labels) so the brackets sit inside
-  // the REC / timecode / lens / label text on every aspect ratio — the widest
-  // label (the lens readout) reaches ~19vmin from the edge.
+  // the REC / timecode / lens / label text on every aspect ratio. The insets are
+  // symmetric, so the box centre is the screen centre — scaling the group about
+  // its centre converges the corners straight to the middle.
   const full = { top: "9vmin", left: "21vmin", right: "21vmin", bottom: "9vmin" };
-  // A small box centred on screen (like a focus box) — not tucked in a corner.
-  const box = { top: "43vh", left: "41vw", right: "41vw", bottom: "43vh" };
   return (
     <motion.div
       className="pointer-events-none absolute"
-      initial={{ opacity: 0, ...full }}
-      animate={
-        revealing ? { opacity: [1, 1, 0], ...box } : { opacity: 1, ...full }
-      }
-      transition={{
-        opacity: revealing
-          ? { duration: 1.7, times: [0, 0.78, 1], ease: "easeInOut" }
-          : { duration: 0.3, ease: "easeOut" },
-        top: { duration: 0.9, ease: EASE_INOUT },
-        left: { duration: 0.9, ease: EASE_INOUT },
-        right: { duration: 0.9, ease: EASE_INOUT },
-        bottom: { duration: 0.9, ease: EASE_INOUT },
-      }}
+      style={full}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
     >
-      {BRACKETS.map((p) => (
-        <span
-          key={p}
-          className={`absolute h-[2.6vmin] w-[2.6vmin] border-primary ${p}`}
-        />
-      ))}
+      {/* (1) corners scale down to a small box, then fade as the cross takes over */}
+      <motion.div
+        className="absolute inset-0 origin-center"
+        initial={false}
+        animate={{ scale: revealing ? 0.16 : 1 }}
+        transition={{ duration: 0.75, ease: EASE_INOUT }}
+      >
+        {BRACKETS.map((p) => (
+          <motion.span
+            key={p}
+            className={`absolute h-[2.6vmin] w-[2.6vmin] border-primary ${p}`}
+            initial={false}
+            animate={{ opacity: revealing ? 0 : 1 }}
+            transition={{
+              duration: 0.35,
+              delay: revealing ? 0.6 : 0,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </motion.div>
+
+      {/* (2) the box morphs into a focus crosshair at the centre, then fades */}
+      {revealing && (
+        <motion.div
+          className="absolute left-1/2 top-1/2"
+          style={{ x: "-50%", y: "-50%" }}
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: [0, 1, 1, 0], scale: 1 }}
+          transition={{
+            duration: 1.15,
+            times: [0, 0.45, 0.72, 1],
+            ease: EASE_INOUT,
+          }}
+        >
+          <div className="relative h-[7vmin] w-[7vmin]">
+            <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-primary" />
+            <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-primary" />
+            <span className="absolute inset-[36%] rounded-full border border-primary/70" />
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
