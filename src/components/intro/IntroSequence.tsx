@@ -47,10 +47,36 @@ export default function IntroSequence() {
     setLite(window.matchMedia("(pointer: coarse)").matches);
 
     // Countdown sound — the provided clip, played as the leader counts 3·2·1.
-    // Best-effort: browsers may block audio until the visitor interacts.
+    const startedAt = performance.now();
     const audio = new Audio("/audio/countdown.mp3");
     audio.volume = 0.8;
     audio.play().catch(() => {});
+
+    // Browsers block audio until the visitor interacts, so autoplay above is
+    // usually muted. The FIRST tap / click / key anywhere then plays the clip —
+    // fast-forwarded to match how far the visual countdown has already got, so
+    // it stays in sync — and that same gesture unlocks the later typing clip.
+    const unlock = () => {
+      if (!audio.paused) return; // already sounding — nothing to do
+      const elapsed = Math.max((performance.now() - startedAt) / 1000, 0);
+      try {
+        audio.currentTime = Number.isFinite(audio.duration)
+          ? Math.min(elapsed, audio.duration)
+          : elapsed;
+      } catch {
+        /* metadata not ready — play from the start */
+      }
+      audio.play().catch(() => {});
+      teardownUnlock();
+    };
+    const teardownUnlock = () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+    window.addEventListener("pointerdown", unlock, { passive: true });
+    window.addEventListener("touchstart", unlock, { passive: true });
+    window.addEventListener("keydown", unlock, { passive: true });
 
     // Timeline synced to the clip's beeps: 3·2·1 pop on the beeps at 0.71 /
     // 1.71 / 2.71 s, and "Action" lands on the final beep at 3.71 s.
@@ -69,6 +95,7 @@ export default function IntroSequence() {
     return () => {
       t.forEach((id) => window.clearTimeout(id));
       audio.pause();
+      teardownUnlock();
     };
   }, [reveal]);
 
