@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import ScrollTopOnLoad from "@/components/ScrollTopOnLoad";
 import { site } from "@/lib/site";
 
 const inter = Inter({
@@ -59,6 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="min-h-full bg-ink text-paper">
+        <ScrollTopOnLoad />
         <Providers>{children}</Providers>
         {/* Project-wide background noise (density/size tuned in globals.css). */}
         <div className="grain-field" aria-hidden />
