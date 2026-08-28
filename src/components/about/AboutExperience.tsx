@@ -147,7 +147,7 @@ type CollageTile = { x: number; y: number; h: number; z: number; rot: number };
 const COLLAGE_W = 330; // canvas width in vw
 const COLLAGE: CollageTile[] = [
   { x: 1, y: 9, h: 68, z: 2, rot: -1.5 }, //  0 img · spotlight
-  { x: 23, y: 36, h: 27, z: 6, rot: 2 }, //   1 vid · behind the scenes
+  { x: 23, y: 27, h: 46, z: 6, rot: 2 }, //   1 vid · behind the scenes (portrait)
   { x: 38, y: 13, h: 54, z: 1, rot: 0 }, //   2 img · directing (landscape)
   { x: 71, y: 29, h: 42, z: 6, rot: -2 }, //  3 vid · on the move (portrait)
   { x: 90, y: 6, h: 72, z: 2, rot: 1 }, //    4 img · on set
