@@ -5,7 +5,7 @@ import type { WorksView } from "@/components/works/WorksViewSwitcher";
 export const metadata: Metadata = {
   title: "Works",
   description:
-    "Selected works by Damilola Olawoyin (AreyouDami.) — creative direction, editing and producing. Browse in grid, list or zoom.",
+    "Selected works by Damilare Olawoyin (AreyouDami.) — creative direction, editing and producing. Browse in grid, list or zoom.",
 };
 
 const isView = (v?: string): v is WorksView =>

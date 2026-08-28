@@ -12,7 +12,7 @@ const inter = Inter({
 
 const title = `${site.name} — ${site.creator}, ${site.role}`;
 const description =
-  "Damilola Olawoyin (AreyouDami.) — creative director & editor based in Lagos. Bringing stories that push emotions. Edit. Color. VFX.";
+  "Damilare Olawoyin (AreyouDami.) — creative director & editor based in Lagos. Bringing stories that push emotions. Edit. Color. VFX.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://areyoudami.com"),
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   description,
   keywords: [
-    "Damilola Olawoyin",
+    "Damilare Olawoyin",
     "AreyouDami",
     "creative director",
     "film editor",
@@ -37,13 +37,13 @@ export const metadata: Metadata = {
     title,
     description,
     siteName: site.name,
-    images: [{ url: "/images/hero-poster.jpg", width: 1200, height: 630 }],
+    // og:image comes from app/opengraph-image.tsx (the generated home-page card).
   },
   twitter: {
     card: "summary_large_image",
     title,
     description,
-    images: ["/images/hero-poster.jpg"],
+    // twitter:image falls back to the generated og:image.
   },
   robots: { index: true, follow: true },
 };
