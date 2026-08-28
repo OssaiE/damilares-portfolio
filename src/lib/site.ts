@@ -88,7 +88,7 @@ export const about = {
     {
       src: "/images/about/about-1.jpg",
       video: { webm: "/videos/about-1.webm", mp4: "/videos/about-1.mp4" },
-      aspect: "16 / 9",
+      aspect: "9 / 16",
       action: "Behind the Scenes",
       role: "Director",
     },
