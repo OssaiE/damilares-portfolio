@@ -76,8 +76,8 @@ export default function ProjectList({
     <div ref={containerRef} className="relative px-[var(--gutter)]">
       {sections.map((section) => (
         <section key={section.title} className="mb-12 last:mb-0">
-          {/* Big yellow section header */}
-          <h2 className="mb-4 font-sans text-3xl font-bold tracking-tight text-primary md:text-4xl">
+          {/* Yellow section header */}
+          <h2 className="mb-4 font-sans text-[20px] font-bold tracking-tight text-primary">
             {section.title}
           </h2>
 
@@ -88,7 +88,7 @@ export default function ProjectList({
             <span>Projects</span>
             <span>Client</span>
             <span>Year</span>
-            <span>Services</span>
+            <span>Role</span>
           </div>
 
           <ul>
@@ -147,7 +147,7 @@ export default function ProjectList({
                         active ? "text-ink" : "text-subtext md:text-paper"
                       }`}
                     >
-                      {project.services}
+                      {project.role.join(", ")}
                     </span>
                   </Link>
                 </li>
