@@ -17,6 +17,6 @@ export default async function WorksPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const sp = await searchParams;
-  const view = isView(sp.view) ? sp.view : "grid";
+  const view = isView(sp.view) ? sp.view : "zoom";
   return <WorksExperience view={view} />;
 }

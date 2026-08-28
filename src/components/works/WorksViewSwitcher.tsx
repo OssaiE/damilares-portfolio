@@ -3,9 +3,9 @@
 export type WorksView = "grid" | "list" | "zoom";
 
 export const WORKS_VIEWS: { id: WorksView; label: string }[] = [
-  { id: "grid", label: "Grid" },
-  { id: "list", label: "List" },
   { id: "zoom", label: "Zoom" },
+  { id: "list", label: "List" },
+  { id: "grid", label: "Grid" },
 ];
 
 /**
