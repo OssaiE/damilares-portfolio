@@ -5,7 +5,7 @@ import ContactExperience from "@/components/contact/ContactExperience";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with Damilola Olawoyin (AreyouDami.) — creative direction, editing and producing.",
+    "Get in touch with Damilare Olawoyin (AreyouDami.) — creative direction, editing and producing.",
 };
 
 export default function ContactPage() {
