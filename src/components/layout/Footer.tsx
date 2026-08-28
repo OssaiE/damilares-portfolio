@@ -167,11 +167,11 @@ export default function Footer({
           {/* Bottom bar */}
           <div className="mt-6 flex flex-col items-center gap-4 text-center text-xs tracking-[0.14em] text-subtext lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:text-left">
             <p className="normal-case lg:uppercase">
-              <a href="https://instagram.com" className="hover:text-paper">
+              <a href="https://www.instagram.com/areyoudami" className="hover:text-paper">
                 Instagram
               </a>{" "}
               •{" "}
-              <a href="https://linkedin.com" className="hover:text-paper">
+              <a href="https://www.linkedin.com/in/damilareolawoyin" className="hover:text-paper">
                 LinkedIn
               </a>
             </p>
