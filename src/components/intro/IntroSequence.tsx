@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useIntro } from "./IntroContext";
 
@@ -19,7 +19,7 @@ import { useIntro } from "./IntroContext";
  * entrance. Skipped entirely under reduced-motion.
  * ------------------------------------------------------------------ */
 
-type Stage = "count" | "camera" | "reveal" | "gone";
+type Stage = "idle" | "count" | "camera" | "reveal" | "gone";
 
 const EASE_INOUT = [0.76, 0, 0.24, 1] as const;
 
@@ -28,7 +28,10 @@ const SONAR = "#55575A"; // sonar rings / ticks / crosshair
 
 export default function IntroSequence() {
   const { reveal } = useIntro();
-  const [stage, setStage] = useState<Stage>("count");
+  // Starts on a tap-to-start screen: browsers block audio until the visitor
+  // interacts, so the countdown clip only plays if the sequence is kicked off
+  // from a real gesture. That tap also unlocks audio for the later typing clip.
+  const [stage, setStage] = useState<Stage>("idle");
   // Starts at 0 (no digit) — the "3" pops in on the clip's first beep.
   const [n, setN] = useState(0);
   // Touch devices (phones/tablets) still play the intro, but in a "lite" mode
@@ -36,25 +39,38 @@ export default function IntroSequence() {
   // compositing is what can lock up mobile Safari on a single frame. The
   // countdown, camera viewfinder and iris reveal all still run.
   const [lite, setLite] = useState(false);
+  const timers = useRef<number[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Only reduced-motion skips the cinematic intro entirely.
+    // Reduced-motion skips the whole cinematic intro (no prompt, no sound).
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       reveal();
       setStage("gone");
       return;
     }
     setLite(window.matchMedia("(pointer: coarse)").matches);
+    return () => {
+      timers.current.forEach((id) => window.clearTimeout(id));
+      audioRef.current?.pause();
+    };
+  }, [reveal]);
 
-    // Countdown sound — the provided clip, played as the leader counts 3·2·1.
-    // Best-effort: browsers may block audio until the visitor interacts.
+  // Kicked off by the visitor's tap — the gesture is what lets the browser play
+  // audio, so the countdown clip (and later the typing clip) actually sound.
+  const start = () => {
+    if (stage !== "idle") return;
+
+    // Play the countdown clip straight from the tap so audio unlocks.
     const audio = new Audio("/audio/countdown.mp3");
     audio.volume = 0.8;
     audio.play().catch(() => {});
+    audioRef.current = audio;
 
+    setStage("count");
     // Timeline synced to the clip's beeps: 3·2·1 pop on the beeps at 0.71 /
     // 1.71 / 2.71 s, and "Action" lands on the final beep at 3.71 s.
-    const t: number[] = [];
+    const t = timers.current;
     t.push(window.setTimeout(() => setN(3), 710));
     t.push(window.setTimeout(() => setN(2), 1710));
     t.push(window.setTimeout(() => setN(1), 2710));
@@ -66,11 +82,7 @@ export default function IntroSequence() {
       }, 4600),
     );
     t.push(window.setTimeout(() => setStage("gone"), 6350));
-    return () => {
-      t.forEach((id) => window.clearTimeout(id));
-      audio.pause();
-    };
-  }, [reveal]);
+  };
 
   if (stage === "gone") return null;
   const revealing = stage === "reveal";
@@ -158,14 +170,62 @@ export default function IntroSequence() {
 
         {/* Countdown only during the count; the camera grid holds through the
             reveal so "Action" fades out with the overlay (otherwise the ternary
-            falls back to the countdown and flashes the last digit, "1"). */}
-        {stage === "count" ? <Countdown n={n} /> : <CameraGrid />}
+            falls back to the countdown and flashes the last digit, "1"). Nothing
+            over the black while idle — the start prompt sits on its own layer. */}
+        {stage === "count" ? (
+          <Countdown n={n} />
+        ) : stage === "idle" ? null : (
+          <CameraGrid />
+        )}
       </motion.div>
+
+      {/* Tap-to-start — the gesture that unlocks the intro audio. */}
+      {stage === "idle" && <StartPrompt onStart={start} />}
 
       {/* Recording frame — persists through the reveal (does NOT fade with the
           content), shrinks to a small nav-like box, then fades out. */}
       {holding && <RecordingFrame revealing={revealing} />}
     </motion.div>
+  );
+}
+
+/* ----------------------------- tap to start ------------------------------ */
+
+/** Full-screen play prompt over the black leader. Its tap is the user gesture
+ *  the browser needs before it will play the intro's countdown + typing audio. */
+function StartPrompt({ onStart }: { onStart: () => void }) {
+  return (
+    <motion.button
+      type="button"
+      onClick={onStart}
+      aria-label="Play intro"
+      className="pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-6 text-primary outline-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <span className="relative flex h-24 w-24 items-center justify-center md:h-28 md:w-28">
+        {/* pulsing halo */}
+        <motion.span
+          className="absolute inset-0 rounded-full border border-primary/40"
+          animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0, 0.5] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* ring + play glyph */}
+        <span className="flex h-full w-full items-center justify-center rounded-full border border-primary/70">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden
+            className="h-9 w-9 translate-x-0.5 fill-primary md:h-10 md:w-10"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </span>
+      </span>
+      <span className="font-sans text-xs uppercase tracking-[0.3em] text-primary/80 md:text-sm">
+        Tap to start
+      </span>
+    </motion.button>
   );
 }
 
