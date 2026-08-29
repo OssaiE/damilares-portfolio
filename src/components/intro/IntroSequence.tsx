@@ -307,7 +307,7 @@ function Countdown({ n }: { n: number }) {
               {n > 0 && (
                 <motion.span
                   key={n}
-                  className="font-display text-[26vmin] font-bold leading-none text-primary [text-shadow:0_2px_40px_rgba(0,0,0,0.5)]"
+                  className="font-display text-[26vmin] font-[550] leading-none text-primary [text-shadow:0_2px_40px_rgba(0,0,0,0.5)]"
                   initial={{ scale: 1.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.6, opacity: 0 }}
@@ -422,7 +422,7 @@ function CameraGrid() {
           <span className="absolute inset-[34%] rounded-full border border-primary/60" />
         </div>
         <motion.span
-          className="font-display text-[8vmin] font-bold leading-none tracking-[0.02em]"
+          className="font-display text-[8vmin] font-[550] leading-none tracking-[0.02em]"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.12, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
@@ -447,7 +447,7 @@ function CameraGrid() {
       </div>
 
       {/* labels */}
-      <div className="absolute bottom-[5.5vmin] left-1/2 -translate-x-1/2 font-display text-[3.2vmin] font-bold tracking-[-0.07em]">
+      <div className="absolute bottom-[5.5vmin] left-1/2 -translate-x-1/2 font-display text-[3.2vmin] font-[550] tracking-[-0.07em]">
         AreyouDami.
       </div>
       <div className="absolute bottom-[6vmin] right-[6vmin] font-sans text-[1.6vmin] tracking-[0.25em] text-primary/85">

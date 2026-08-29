@@ -91,7 +91,9 @@ export default function CustomCursor() {
   return (
     <motion.div
       aria-hidden
-      className="pointer-events-none fixed left-0 top-0 z-[60]"
+      // z above the intro leader (z-200) so the crosshair still shows on the
+      // tap-to-start / countdown screens — the native cursor is hidden there.
+      className="pointer-events-none fixed left-0 top-0 z-[210]"
       // A dark drop-shadow (instead of mix-blend-difference) keeps the white
       // crosshair readable over ANY background. Difference-blend mathematically
       // loses all contrast over mid-tones — so the cursor vanished on the hero
