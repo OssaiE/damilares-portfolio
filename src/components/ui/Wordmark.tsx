@@ -7,14 +7,20 @@ import { site } from "@/lib/site";
 export default function Wordmark({
   className = "",
   as: Tag = "span",
+  weight = 700,
+  tracking = "-0.02em",
 }: {
   className?: string;
   as?: React.ElementType;
+  /** Display weight (variable font). Defaults to 700; footer/particle use 550. */
+  weight?: number;
+  /** Letter-spacing. Defaults to -0.02em; the nav logo uses -0.04em. */
+  tracking?: string;
 }) {
   return (
     <Tag
-      className={`font-display font-bold tracking-[-0.02em] ${className}`}
-      style={{ fontFeatureSettings: "normal" }}
+      className={`font-display ${className}`}
+      style={{ fontWeight: weight, letterSpacing: tracking, fontFeatureSettings: "normal" }}
     >
       {site.name}
     </Tag>

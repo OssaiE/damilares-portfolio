@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Work_Sans } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import ScrollTopOnLoad from "@/components/ScrollTopOnLoad";
@@ -7,6 +7,16 @@ import { site } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Display face (wordmark, big section titles). Was the self-hosted Oriya Sangam
+// MN; now Work Sans — a licensed Google grotesque. Loaded as the VARIABLE font
+// (full weight axis) so we can use in-between weights like 550 (particle
+// wordmark + footer) alongside the 700 used for other display type.
+const workSans = Work_Sans({
+  variable: "--font-work-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -58,7 +68,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    <html lang="en" className={`${inter.variable} ${workSans.variable} h-full`}>
       <head>
         {/* Set BEFORE the browser restores scroll on reload, so a reload always
             starts at the top (doing this in an effect runs too late and is racy

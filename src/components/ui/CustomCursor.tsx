@@ -91,8 +91,19 @@ export default function CustomCursor() {
   return (
     <motion.div
       aria-hidden
-      className="pointer-events-none fixed left-0 top-0 z-[60] mix-blend-difference"
-      style={{ x: springX, y: springY }}
+      // z above the intro leader (z-200) so the crosshair still shows on the
+      // tap-to-start / countdown screens — the native cursor is hidden there.
+      className="pointer-events-none fixed left-0 top-0 z-[210]"
+      // A dark drop-shadow (instead of mix-blend-difference) keeps the white
+      // crosshair readable over ANY background. Difference-blend mathematically
+      // loses all contrast over mid-tones — so the cursor vanished on the hero
+      // video and the yellow wordmark, which read as it being "missing".
+      style={{
+        x: springX,
+        y: springY,
+        filter:
+          "drop-shadow(0 0 1px rgba(0,0,0,0.55)) drop-shadow(0 1px 2px rgba(0,0,0,0.4))",
+      }}
       animate={{ opacity: visible ? 1 : 0 }}
       transition={{ duration: 0.2 }}
     >

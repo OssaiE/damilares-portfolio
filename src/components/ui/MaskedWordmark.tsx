@@ -137,8 +137,8 @@ export default function MaskedWordmark({
             x={0}
             y={BASELINE}
             fontSize={FONT_SIZE}
-            fontFamily='"Oriya Sangam MN", "Arial Black", sans-serif'
-            fontWeight={700}
+            fontFamily='"Work Sans", "Arial", sans-serif'
+            fontWeight={550}
             style={{ letterSpacing: LETTER_SPACING }}
             fill="#ffcc00"
           >

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import ClapperMenuIcon from "@/components/ui/ClapperMenuIcon";
 import CameraViewfinder from "@/components/ui/CameraViewfinder";
+import Wordmark from "@/components/ui/Wordmark";
 import { nav, socials } from "@/lib/site";
 import { playClap } from "@/lib/clap";
 
@@ -188,20 +189,18 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
               {mobileLabel}
             </span>
 
-            {/* Desktop: the AreyouDami. logo */}
+            {/* Desktop: the AreyouDami. logo — set live in the display face
+                (Work Sans) so it matches the rest of the site's wordmarks. */}
             <Link
               href="/"
               onClick={close}
               aria-label="AreyouDami. home"
               className="hidden items-center pr-1 transition-opacity duration-300 hover:opacity-70 md:flex"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.svg"
-                alt="AreyouDami."
-                width={108}
-                height={20}
-                className="h-[19px] w-auto"
+              <Wordmark
+                weight={600}
+                tracking="-0.08em"
+                className="text-[19px] leading-none"
               />
             </Link>
           </motion.div>
