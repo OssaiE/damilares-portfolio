@@ -111,7 +111,11 @@ export default function MaskedWordmark({
           fade so it doesn't re-read as the intro's focus-pull; on its own it
           plays the fuller blur-in once on mount. */}
       <motion.div
-        className="relative block w-full [mix-blend-mode:exclusion]"
+        // The exclusion blend (live-negative against the footage) is only for
+        // the desktop particle field. On mobile/tablet the particles are off
+        // and the SVG shows, so we render it as plain solid type instead —
+        // exclusion would invert the yellow over bright footage.
+        className={`relative block w-full ${enabled ? "[mix-blend-mode:exclusion]" : ""}`}
         initial={hidden}
         animate={reveal === false ? hidden : shown}
         transition={{
