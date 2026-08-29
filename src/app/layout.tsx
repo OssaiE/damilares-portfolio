@@ -59,6 +59,17 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
+      <head>
+        {/* Set BEFORE the browser restores scroll on reload, so a reload always
+            starts at the top (doing this in an effect runs too late and is racy
+            in production). ScrollTopOnLoad is the belt-and-suspenders follow-up. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-full bg-ink text-paper">
         <ScrollTopOnLoad />
         <Providers>{children}</Providers>

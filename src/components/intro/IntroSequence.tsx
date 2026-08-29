@@ -50,6 +50,16 @@ export default function IntroSequence() {
       return;
     }
     setLite(window.matchMedia("(pointer: coarse)").matches);
+
+    // Preload the countdown clip so it's ready the instant the visitor taps —
+    // on a slower (production) connection a fresh element created on tap can be
+    // silent or lag behind the visual until it buffers.
+    const audio = new Audio("/audio/countdown.mp3");
+    audio.preload = "auto";
+    audio.volume = 0.8;
+    audio.load();
+    audioRef.current = audio;
+
     return () => {
       timers.current.forEach((id) => window.clearTimeout(id));
       audioRef.current?.pause();
@@ -62,8 +72,15 @@ export default function IntroSequence() {
   const start = () => {
     if (stage !== "idle") return;
 
-    const audio = new Audio("/audio/countdown.mp3");
+    // Play the preloaded countdown clip from the tap (the gesture unlocks
+    // audio); fall back to a fresh element if preload somehow didn't run.
+    const audio = audioRef.current ?? new Audio("/audio/countdown.mp3");
     audio.volume = 0.8;
+    try {
+      audio.currentTime = 0;
+    } catch {
+      /* not ready yet — plays from the start anyway */
+    }
     audio.play().catch(() => {});
     audioRef.current = audio;
 
