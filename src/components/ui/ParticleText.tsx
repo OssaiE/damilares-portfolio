@@ -88,12 +88,12 @@ export default function ParticleText({
       octx.setTransform(dpr, 0, 0, dpr, 0, 0);
       octx.clearRect(0, 0, W, H);
       octx.textBaseline = "alphabetic";
-      octx.font = `700 100px "Oriya Sangam MN", "Arial Black", sans-serif`;
+      octx.font = `700 100px "Work Sans", "Arial", sans-serif`;
       octx.letterSpacing = LETTER_SPACING;
       const label = textRef.current;
       const base = octx.measureText(label).width || 1;
       const size = (100 * W) / base;
-      octx.font = `700 ${size}px "Oriya Sangam MN", "Arial Black", sans-serif`;
+      octx.font = `700 ${size}px "Work Sans", "Arial", sans-serif`;
       octx.letterSpacing = LETTER_SPACING;
       const m = octx.measureText(label);
       const desc = m.actualBoundingBoxDescent || size * 0.18;
