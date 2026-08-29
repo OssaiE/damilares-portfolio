@@ -205,7 +205,7 @@ function TypedCopy({
     // Keyboard-typing sound over the typing animation, stopped once it lands.
     // Best-effort — browsers may block audio until the visitor interacts.
     const audio = new Audio("/audio/typing.mp3");
-    audio.volume = 0.55;
+    audio.volume = 0.39; // ~70% of the original 0.55
     audio.play().catch(() => {});
 
     let i = 0;

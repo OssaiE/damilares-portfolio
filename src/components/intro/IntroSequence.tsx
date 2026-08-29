@@ -56,7 +56,7 @@ export default function IntroSequence() {
     // silent or lag behind the visual until it buffers.
     const audio = new Audio("/audio/countdown.mp3");
     audio.preload = "auto";
-    audio.volume = 0.8;
+    audio.volume = 0.56; // ~70% of the original 0.8
     audio.load();
     audioRef.current = audio;
 
@@ -75,7 +75,7 @@ export default function IntroSequence() {
     // Play the preloaded countdown clip from the tap (the gesture unlocks
     // audio); fall back to a fresh element if preload somehow didn't run.
     const audio = audioRef.current ?? new Audio("/audio/countdown.mp3");
-    audio.volume = 0.8;
+    audio.volume = 0.56; // ~70% of the original 0.8
     try {
       audio.currentTime = 0;
     } catch {
