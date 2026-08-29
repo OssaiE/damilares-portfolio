@@ -168,11 +168,11 @@ export default function Hero() {
 
           {/* Masked wordmark (live negative via mix-blend) — decorative, so it
               never intercepts clicks meant for the chips or the reel trigger.
-              The copy block overlaps the wordmark by 32px (a negative margin on
+              The copy block overlaps the wordmark by 38px (a negative margin on
               the tight glyph box), so the last line sinks into the letters. It
               drives its own blur-in via `reveal` so the wordmark blurs up (not a
               hard pop) as the copy lifts. */}
-          <div className="pointer-events-none -mt-8">
+          <div className="pointer-events-none -mt-[38px]">
             <MaskedWordmark reveal={step >= 3} />
           </div>
         </div>
