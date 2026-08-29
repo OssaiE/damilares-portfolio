@@ -2,26 +2,11 @@
 
 /* ------------------------------------------------------------------ */
 /*  Fonts                                                              */
-/*  Display: Oriya Sangam MN (self-hosted, subset to Latin).          */
-/*  NOTE: Oriya Sangam MN is an Apple system font. It is self-hosted  */
-/*  here for pixel-fidelity to the Figma source. Resolve licensing    */
-/*  (or swap for a licensed grotesque) before public production use.  */
-/*  Sans: Inter (loaded via next/font in layout.tsx).                 */
+/*  Display: Work Sans — a licensed Google grotesque (loaded via       */
+/*  next/font in layout.tsx, exposed as --font-work-sans). Used at     */
+/*  bold (700) with tight tracking to keep the wordmark/title look.    */
+/*  Sans: Inter (also next/font).                                      */
 /* ------------------------------------------------------------------ */
-@font-face {
-  font-family: "Oriya Sangam MN";
-  src: url("/fonts/OriyaSangamMN-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Oriya Sangam MN";
-  src: url("/fonts/OriyaSangamMN-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
 
 /* Intro iris — the radius of the aperture hole cut into the black leader.
    Registered (not just a bare custom property) so it resolves and animates
@@ -43,7 +28,7 @@
   --color-paper: #ffffff; /* White / text */
   --color-subtext: #8e8e93;
 
-  --font-display: "Oriya Sangam MN", "Arial Black", system-ui, sans-serif;
+  --font-display: var(--font-work-sans), "Arial", system-ui, sans-serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
