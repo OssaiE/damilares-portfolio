@@ -60,11 +60,25 @@ export default function MaskedWordmark({
     };
   }, []);
 
-  // Enable the effect only for fine pointers without reduced-motion.
+  // Particle field is desktop-only: a fine pointer, no reduced-motion, AND a
+  // desktop-width viewport (≥1024px). The width gate keeps it off mobile/tablet
+  // even on touch-laptops / hybrids that report a fine pointer — those get the
+  // plain solid SVG wordmark instead. Re-evaluated on resize.
   useEffect(() => {
-    const fine = window.matchMedia("(pointer: fine)").matches;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setEnabled(fine && !reduce);
+    const fine = window.matchMedia("(pointer: fine)");
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () =>
+      setEnabled(fine.matches && wide.matches && !reduce.matches);
+    update();
+    fine.addEventListener("change", update);
+    wide.addEventListener("change", update);
+    reduce.addEventListener("change", update);
+    return () => {
+      fine.removeEventListener("change", update);
+      wide.removeEventListener("change", update);
+      reduce.removeEventListener("change", update);
+    };
   }, []);
 
   // Hover + pointer tracking (no pointer capture, so chips/reel keep their clicks).
@@ -150,14 +164,18 @@ export default function MaskedWordmark({
           </text>
         </svg>
 
-        {/* Particle field (pointer smoothly repels nearby particles) */}
-        <ParticleText
-          text={text}
-          hovering={hovering}
-          enabled={enabled}
-          pointer={pointer}
-          onReady={() => setParticlesReady(true)}
-        />
+        {/* Particle field (desktop only) — pointer smoothly repels nearby
+            particles. Not mounted at all on mobile/tablet, where the solid SVG
+            wordmark above is the final render. */}
+        {enabled && (
+          <ParticleText
+            text={text}
+            hovering={hovering}
+            enabled={enabled}
+            pointer={pointer}
+            onReady={() => setParticlesReady(true)}
+          />
+        )}
       </motion.div>
     </Tag>
   );
