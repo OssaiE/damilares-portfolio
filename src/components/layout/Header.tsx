@@ -197,7 +197,7 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
               aria-label="AreyouDami. home"
               className="hidden items-center pr-1 transition-opacity duration-300 hover:opacity-70 md:flex"
             >
-              <Wordmark className="text-[19px] leading-none" />
+              <Wordmark weight={550} className="text-[19px] leading-none" />
             </Link>
           </motion.div>
         </div>
