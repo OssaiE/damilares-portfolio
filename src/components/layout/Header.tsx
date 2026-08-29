@@ -199,7 +199,7 @@ export default function Header({ topRight }: { topRight?: React.ReactNode }) {
             >
               <Wordmark
                 weight={600}
-                tracking="-0.04em"
+                tracking="-0.08em"
                 className="text-[19px] leading-none"
               />
             </Link>
