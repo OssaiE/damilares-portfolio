@@ -12,12 +12,12 @@ const inter = Inter({
 });
 
 // Display face (wordmark, big section titles). Was the self-hosted Oriya Sangam
-// MN; now Work Sans — a licensed Google grotesque. Only the weights actually
-// used (regular + bold) are loaded; the display look everywhere is `font-bold`.
+// MN; now Work Sans — a licensed Google grotesque. Loaded as the VARIABLE font
+// (full weight axis) so we can use in-between weights like 550 (particle
+// wordmark + footer) alongside the 700 used for other display type.
 const workSans = Work_Sans({
   variable: "--font-work-sans",
   subsets: ["latin"],
-  weight: ["400", "700"],
   display: "swap",
 });
 
