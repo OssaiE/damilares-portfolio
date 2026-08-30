@@ -236,7 +236,7 @@ const PROJECT_DATA: {
     category: "Documentary",
     year: "2024",
     role: ["Editor", "Colorist"],
-    client: "Palmwine Fest",
+    client: "Days & Nites",
     description:
       "A behind-the-scenes documentary capturing the energy, scale, and creative process behind Palmwine Fest. Through intimate moments, candid perspectives, and cinematic imagery, the film explores the people and production that bring the festival experience to life.",
     youtubeUrl: "https://youtu.be/WPUffgFapd8",
@@ -296,7 +296,7 @@ const PROJECT_DATA: {
     category: "Editorial",
     year: "2024",
     role: ["Editor", "Colorist"],
-    client: "Dami Oniru",
+    client: "Days & Nites",
     description:
       "A character-driven profile exploring Dami Oniru's creative journey, personality, and perspective as an artist. I contributed to the visual execution, using intimate framing, considered compositions, and a relaxed cinematic approach to create an authentic portrait that lets her story and personality lead.",
     youtubeUrl: "https://youtu.be/Dh2nLfUEfB8",
@@ -306,7 +306,7 @@ const PROJECT_DATA: {
     category: "Editorial",
     year: "2024",
     role: ["Editor", "Colorist"],
-    client: "Olumide Oworu",
+    client: "Days & Nites",
     description:
       "A character-driven profile offering an intimate look into Olumide Oworu's personality, journey, and life beyond the screen. I contributed to the visual execution, using cinematic framing, natural performances, and a considered visual rhythm to create an authentic portrait of the actor.",
     youtubeUrl: "https://youtu.be/ZgpxbMEt-y4",
