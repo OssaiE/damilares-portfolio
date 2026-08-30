@@ -407,7 +407,7 @@ export const projects: Project[] = PROJECT_DATA.map((p, i) => {
 export const worksSections: { title: string; slugs: string[] }[] = [
   {
     title: "Commercials",
-    slugs: ["tracelive-with-ruger", "american-cola", "adroh-homes"],
+    slugs: ["tracelive-with-ruger", "american-cola", "adron-homes"],
   },
   {
     title: "Documentary",
