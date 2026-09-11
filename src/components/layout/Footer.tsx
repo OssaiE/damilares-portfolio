@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import Wordmark from "@/components/ui/Wordmark";
-import { meta, site } from "@/lib/site";
+import { award, meta, site } from "@/lib/site";
 
 const easeExpo = [0.16, 1, 0.3, 1] as const;
 
@@ -165,8 +165,9 @@ export default function Footer({
 
           <div className="mx-6 border-t border-white/10 lg:mx-0" />
 
-          {/* Bottom bar */}
-          <div className="mt-6 flex flex-col items-center gap-4 text-center text-xs tracking-[0.14em] text-subtext lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:text-left">
+          {/* Bottom bar. `relative` is a no-op for its own layout — it only
+              anchors the award overlay below; the row's content is untouched. */}
+          <div className="relative mt-6 flex flex-col items-center gap-4 text-center text-xs tracking-[0.14em] text-subtext lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:text-left">
             <p className="normal-case lg:uppercase">
               <a href="https://www.instagram.com/areyoudami" className="hover:text-paper">
                 Instagram
@@ -180,6 +181,31 @@ export default function Footer({
               <span className="rec-blink h-1.5 w-1.5 rounded-full bg-primary" />
               {site.name} {site.copyright}
             </p>
+
+            {/* CSS Design Awards — Special Kudos seals. Absolute overlay (adds to
+                no row, moves no element): centred in the gap and TOP-ALIGNED with
+                this line on desktop; tucked just below on mobile (row stacks). */}
+            <div className="pointer-events-none absolute left-1/2 top-full mt-4 flex -translate-x-1/2 items-center gap-4 lg:top-0 lg:mt-0">
+              {award.badges.map((b) => (
+                <a
+                  key={b}
+                  href={award.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${award.label} (opens in a new tab)`}
+                  className="pointer-events-auto block transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-110"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={b}
+                    alt={award.label}
+                    width={72}
+                    height={72}
+                    className="h-12 w-12 drop-shadow-[0_6px_16px_rgba(0,0,0,0.45)] md:h-14 md:w-14 lg:h-[72px] lg:w-[72px]"
+                  />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -30,6 +30,16 @@ export const socials: Social[] = [
   { label: "TikTok", href: "https://www.tiktok.com/@idamilare", icon: "/social/tiktok.svg" },
 ];
 
+/** Recognition — the CSS Design Awards "Special Kudos" seals in the footer. */
+export const award = {
+  label: "CSS Design Awards — Special Kudos",
+  href: "https://www.cssdesignawards.com/sites/areyoudami/50101/",
+  badges: [
+    "/awards/cssda-special-kudos-white.svg",
+    "/awards/cssda-special-kudos-yellow.svg",
+  ],
+} as const;
+
 /** Footer meta columns */
 export const meta = [
   { label: "Services", value: "Edit. Color. VFX." },
